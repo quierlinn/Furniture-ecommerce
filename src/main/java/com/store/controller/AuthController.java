@@ -1,7 +1,6 @@
 package com.store.controller;
 
 import com.store.dto.UserDto;
-import com.store.entity.User;
 import com.store.security.JwtUtil;
 import com.store.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -64,8 +64,11 @@ public class AuthController {
             final String token = jwtUtil.generateToken(userDetails);
 
             // Return user info and token
-            UserDto user = userService.getUserByEmail(userDto.getEmail())
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+            Optional<UserDto> userOpt = userService.getUserByEmail(userDto.getEmail());
+            if (!userOpt.isPresent()) {
+                return ResponseEntity.badRequest().body("User not found");
+            }
+            UserDto user = userOpt.get();
 
             Map<String, Object> response = new HashMap<>();
             response.put("user", user);

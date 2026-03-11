@@ -2,10 +2,11 @@ package com.store.service.impl;
 
 import com.store.dto.ProductDto;
 import com.store.entity.Product;
+import com.store.exception.ResourceNotFoundException;
 import com.store.mapper.ProductMapper;
 import com.store.repository.ProductRepository;
 import com.store.service.ProductService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,10 +16,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
 
     @Override
     public Page<ProductDto> getAllProducts(Pageable pageable) {
@@ -34,13 +35,18 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Page<ProductDto> searchProducts(String searchTerm, Pageable pageable) {
-        return productRepository.findBySearchTerm(searchTerm, pageable)
+        String lowerSearchTerm = searchTerm != null ? searchTerm.toLowerCase() : null;
+
+        return productRepository.findBySearchTerm(lowerSearchTerm, pageable)
                 .map(ProductMapper.INSTANCE::toDto);
     }
 
     @Override
     public Page<ProductDto> searchProductsByCategory(Long categoryId, String searchTerm, Pageable pageable) {
-        return productRepository.findByCategoryIdAndSearchTerm(categoryId, searchTerm, pageable)
+        // 👇 Конвертируем поисковый термин в нижний регистр на уровне Java
+        String lowerSearchTerm = searchTerm != null ? searchTerm.toLowerCase() : null;
+
+        return productRepository.findByCategoryIdAndSearchTerm(categoryId, lowerSearchTerm, pageable)
                 .map(ProductMapper.INSTANCE::toDto);
     }
 
@@ -60,9 +66,9 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDto updateProduct(Long id, ProductDto productDto) {
         Product existingProduct = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Product not found with id: " + id));
 
-        // Update fields
         existingProduct.setName(productDto.getName());
         existingProduct.setDescription(productDto.getDescription());
         existingProduct.setPrice(productDto.getPrice());
@@ -76,7 +82,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void deleteProduct(Long id) {
         if (!productRepository.existsById(id)) {
-            throw new RuntimeException("Product not found with id: " + id);
+            throw new ResourceNotFoundException("Product not found with id: " + id);
         }
         productRepository.deleteById(id);
     }

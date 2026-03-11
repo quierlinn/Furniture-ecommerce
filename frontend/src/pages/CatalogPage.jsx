@@ -24,17 +24,19 @@ const CatalogPage = () => {
       try {
         setLoading(true);
         const params = {
-          page: currentPage,
-          limit: itemsPerPage,
-          ...filters
+          page: currentPage - 1, // API uses 0-based indexing
+          size: itemsPerPage,
+          sortBy: filters.sortBy,
+          sortDir: filters.sortOrder,
+          category: filters.category,
+          q: filters.search  // API uses 'q' for search query
         };
         
         const response = await productService.getProducts(params);
-        setProducts(response.data.products || response.data);
+        setProducts(response.data.content || []);
         
         // Calculate total pages based on total count
-        const totalCount = response.data.totalCount || response.data.length;
-        setTotalPages(Math.ceil(totalCount / itemsPerPage));
+        setTotalPages(response.data.totalPages || 1);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -48,8 +50,7 @@ const CatalogPage = () => {
   const handleSearch = (query) => {
     setFilters(prev => ({
       ...prev,
-      search: query,
-      page: 1
+      search: query
     }));
     setCurrentPage(1);
   };

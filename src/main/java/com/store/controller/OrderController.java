@@ -42,9 +42,8 @@ public class OrderController {
         // Check if user is authorized to view this order
         User user = (User) authentication.getPrincipal();
         
-        return orderService.getOrderById(id)
+        return (ResponseEntity<OrderDto>) orderService.getOrderById(id)
                 .map(order -> {
-                    // Only allow user to view their own orders or admins to view any order
                     if (order.getUserId().equals(user.getId()) || user.getRole().toString().equals("ADMIN")) {
                         return ResponseEntity.ok(order);
                     } else {

@@ -11,8 +11,8 @@ const HomePage = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await productService.getProducts({ limit: 8 });
-        setProducts(response.data);
+        const response = await productService.getProducts({ size: 8 });
+        setProducts(response.data.content);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -27,7 +27,7 @@ const HomePage = () => {
     try {
       setLoading(true);
       const response = await productService.getProducts({ search: query });
-      setProducts(response.data);
+      setProducts(response.data.content);
     } catch (err) {
       setError(err.message);
     } finally {

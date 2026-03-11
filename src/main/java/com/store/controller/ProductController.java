@@ -55,6 +55,37 @@ public class ProductController {
         return ResponseEntity.ok(products);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<Page<ProductDto>> searchProducts(
+            @RequestParam String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+        
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        
+        Page<ProductDto> products = productService.searchProducts(q, pageable);
+        return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/search/category/{categoryId}")
+    public ResponseEntity<Page<ProductDto>> searchProductsByCategory(
+            @PathVariable Long categoryId,
+            @RequestParam String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+        
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        
+        Page<ProductDto> products = productService.searchProductsByCategory(categoryId, q, pageable);
+        return ResponseEntity.ok(products);
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto productDto) {

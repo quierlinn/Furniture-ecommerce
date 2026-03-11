@@ -16,6 +16,7 @@ public interface UserMapper {
     @Mapping(target = "firstName", source = "firstName")
     @Mapping(target = "lastName", source = "lastName")
     @Mapping(target = "role", source = "role")
+    @Mapping(target = "password", ignore = true)  // Don't expose password in DTO
     UserDto toDto(User user);
     
     @Mapping(target = "id", source = "id")

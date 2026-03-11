@@ -6,6 +6,7 @@ public class UserDto {
     
     private Long id;
     private String email;
+    private String password;  // Added for registration purposes
     private String firstName;
     private String lastName;
     private Role role;
@@ -36,6 +37,14 @@ public class UserDto {
     
     public void setEmail(String email) {
         this.email = email;
+    }
+    
+    public String getPassword() {
+        return password;
+    }
+    
+    public void setPassword(String password) {
+        this.password = password;
     }
     
     public String getFirstName() {

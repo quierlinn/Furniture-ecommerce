@@ -22,8 +22,8 @@ const AdminProducts = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await productService.getProducts();
-      setProducts(response.data);
+      const response = await productService.getProducts({ size: 100 }); // Get all products, assuming max 100 for admin
+      setProducts(response.data.content || []);
     } catch (err) {
       setError(err.message);
     } finally {
