@@ -141,10 +141,11 @@ npm run dev
 ## Environment Variables
 
 ### Backend (application.properties)
+Make sure to update the database credentials to match your PostgreSQL setup:
 ````
 spring.datasource.url=jdbc:postgresql://localhost:5432/furniture_store
 spring.datasource.username=postgres
-spring.datasource.password=password
+spring.datasource.password=your_actual_postgres_password
 jwt.secret=mySecretKey
 jwt.expiration=86400
 ```
@@ -181,6 +182,14 @@ The project includes Docker configuration for easy deployment:
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
+
+## Troubleshooting
+
+If you encounter a "password authentication failed for user 'postgres'" error:
+1. Verify that PostgreSQL is running on your system
+2. Check that the database credentials in `application.properties` match your PostgreSQL setup
+3. Make sure the database `furniture_store` exists
+4. If using Docker, ensure the database container is running properly
 
 ## License
 
