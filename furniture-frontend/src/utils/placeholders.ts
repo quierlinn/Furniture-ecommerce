@@ -29,7 +29,7 @@ export const generatePlaceholderProducts = (count: number): Product[] => {
         name: `Товар #${i + 1}`,
         description: 'Описание товара для демонстрации',
         price: Math.floor(Math.random() * 50000) + 10000,
-        imageUrl: null,
+        imageUrl: 'https://placehold.co/600x400/3b82f6/ffffff?text=Кухня+Лофт',
         categoryId: (i % 4) + 1,
     }));
 };
