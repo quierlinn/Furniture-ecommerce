@@ -4,11 +4,12 @@ import { useCart } from '../hooks/useCart';
 import type { Product } from '../types';
 
 const FEATURED_PRODUCTS: Product[] = [
-    { id: 1, name: 'Кухня Лофт-01', description: 'Современная кухня в стиле лофт', price: 65451, imageUrl: null, categoryId: 1 },
-    { id: 2, name: 'Шкаф-купе Классик', description: 'Вместительный шкаф для прихожей', price: 32990, imageUrl: null, categoryId: 2 },
-    { id: 3, name: 'Диван Уют', description: 'Мягкий диван для гостиной', price: 45000, imageUrl: null, categoryId: 3 },
-    { id: 4, name: 'Кровать Сканди', description: 'Деревянная кровать в скандинавском стиле', price: 28500, imageUrl: null, categoryId: 4 },
+    { id: 1, name: 'Кухня Лофт-01', description: 'Современная кухня в стиле лофт', price: 65451, imageUrl: undefined, categoryId: 1 },
+    { id: 2, name: 'Шкаф-купе Классик', description: 'Вместительный шкаф для прихожей', price: 32990, imageUrl: undefined, categoryId: 2 },
+    { id: 3, name: 'Диван Уют', description: 'Мягкий диван для гостиной', price: 45000, imageUrl: undefined, categoryId: 3 },
+    { id: 4, name: 'Кровать Сканди', description: 'Деревянная кровать в скандинавском стиле', price: 28500, imageUrl: undefined, categoryId: 4 },
 ];
+
 
 export const HomePage = () => {
     const { addToCart } = useCart();
