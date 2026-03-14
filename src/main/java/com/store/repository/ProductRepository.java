@@ -8,32 +8,18 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    Page<Product> findByCategoryId(Long categoryId, Pageable pageable);
+    @Query("SELECT p FROM Product p WHERE p.category.id = :categoryId")
+    Page<Product> findByCategoryId(@Param("categoryId") Long categoryId, Pageable pageable);
 
-    @Query(value = "SELECT * FROM products p WHERE " +
-            "p.name LIKE CONCAT('%', :searchTerm, '%') OR p.description LIKE CONCAT('%', :searchTerm, '%')",
-            countQuery = "SELECT COUNT(*) FROM products p WHERE " +
-            "p.name LIKE CONCAT('%', :searchTerm, '%') OR p.description LIKE CONCAT('%', :searchTerm, '%')",
-            nativeQuery = true)
-    Page<Product> findBySearchTerm(@Param("searchTerm") String searchTerm, Pageable pageable);
+    @Query("SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%'))")
+    Page<Product> findByNameContainingIgnoreCase(@Param("query") String query, Pageable pageable);
 
-    @Query(value = "SELECT * FROM products p WHERE " +
-            "(p.category_id = :categoryId OR :categoryId IS NULL) AND " +
-            "(:searchTerm IS NULL OR p.name LIKE CONCAT('%', :searchTerm, '%') OR p.description LIKE CONCAT('%', :searchTerm, '%'))",
-            countQuery = "SELECT COUNT(*) FROM products p WHERE " +
-            "(p.category_id = :categoryId OR :categoryId IS NULL) AND " +
-            "(:searchTerm IS NULL OR p.name LIKE CONCAT('%', :searchTerm, '%') OR p.description LIKE CONCAT('%', :searchTerm, '%'))",
-            nativeQuery = true)
-    Page<Product> findByCategoryIdAndSearchTerm(
+    @Query("SELECT p FROM Product p WHERE p.category.id = :categoryId AND LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%'))")
+    Page<Product> findByCategoryIdAndNameContainingIgnoreCase(
             @Param("categoryId") Long categoryId,
-            @Param("searchTerm") String searchTerm,
-            Pageable pageable
-    );
-
-    List<Product> findByIdIn(List<Long> ids);
+            @Param("query") String query,
+            Pageable pageable);
 }

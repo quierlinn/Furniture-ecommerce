@@ -1,29 +1,26 @@
 package com.store.mapper;
 
 import com.store.dto.OrderDto;
+import com.store.dto.OrderItemDto;
 import com.store.entity.Order;
+import com.store.entity.OrderItem;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
-@Mapper(uses = {OrderItemMapper.class})
+@Mapper
 public interface OrderMapper {
-    
+
     OrderMapper INSTANCE = Mappers.getMapper(OrderMapper.class);
-    
-    @Mapping(target = "id", source = "id")
+
+    // ✅ Простой маппинг — только поля, которые точно есть
     @Mapping(target = "userId", source = "user.id")
-    @Mapping(target = "totalAmount", source = "totalPrice")
-    @Mapping(target = "status", source = "status")
-    @Mapping(target = "createdAt", source = "createdAt")
-    @Mapping(target = "items", source = "orderItems")
     OrderDto toDto(Order order);
-    
-    @Mapping(target = "id", source = "id")
+
     @Mapping(target = "user.id", source = "userId")
-    @Mapping(target = "totalPrice", source = "totalAmount")
-    @Mapping(target = "status", source = "status")
-    @Mapping(target = "createdAt", source = "createdAt")
-    @Mapping(target = "orderItems", source = "items")
     Order toEntity(OrderDto orderDto);
+
+    // ✅ OrderItem — отдельно
+    OrderItemDto toDto(OrderItem orderItem);
+    OrderItem toEntity(OrderItemDto orderItemDto);
 }

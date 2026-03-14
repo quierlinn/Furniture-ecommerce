@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourcePerFileMappings">
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/19818d8f-12b1-43ee-b441-610e18fc8276/console.sql" value="19818d8f-12b1-43ee-b441-610e18fc8276" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/db/migration/V3__seed_test_data.sql" value="19818d8f-12b1-43ee-b441-610e18fc8276" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/db/migration/fixBd.sql" value="19818d8f-12b1-43ee-b441-610e18fc8276" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/db/migration/fixDbStructure.sql" value="19818d8f-12b1-43ee-b441-610e18fc8276" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/db/migration/productTable.sql" value="19818d8f-12b1-43ee-b441-610e18fc8276" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/db/migration/productsIntoTable.sql" value="19818d8f-12b1-43ee-b441-610e18fc8276" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/db/migration/renameColumnTotal_Price.sql" value="19818d8f-12b1-43ee-b441-610e18fc8276" />
+  </component>
+</project>

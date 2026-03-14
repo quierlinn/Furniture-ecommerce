@@ -7,10 +7,17 @@ import java.util.List;
 import java.util.Optional;
 
 public interface OrderService {
+
     OrderDto createOrder(OrderDto orderDto, User user);
-    Optional<OrderDto> getOrderById(Long id);
+
     List<OrderDto> getOrdersByUser(User user);
+
+    Optional<OrderDto> getOrderById(Long id);
+
     List<OrderDto> getAllOrders();
-    OrderDto updateOrderStatus(Long orderId, String status);
+
+    OrderDto updateOrderStatus(Long id, String status);
+
+    // ✅ Добавлен метод, которого не хватало:
     void deleteOrder(Long id);
 }

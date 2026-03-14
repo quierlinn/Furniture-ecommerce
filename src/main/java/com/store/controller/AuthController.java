@@ -3,7 +3,7 @@ package com.store.controller;
 import com.store.dto.UserDto;
 import com.store.security.JwtUtil;
 import com.store.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,35 +13,26 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class AuthController {
 
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private UserDetailsService userDetailsService;
-
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final UserService userService;
+    private final AuthenticationManager authenticationManager;
+    private final UserDetailsService userDetailsService;
+    private final JwtUtil jwtUtil;
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserDto userDto) {
         try {
-            // Check if user already exists
             if (userService.existsByEmail(userDto.getEmail())) {
                 return ResponseEntity.badRequest().body("Error: Email is already taken!");
             }
 
-            // Create new user
-            UserDto newUser = userService.createUser(userDto);
+            // ✅ ИСПРАВЛЕНО: используем registerUser вместо createUser
+            UserDto newUser = userService.registerUser(userDto);
             return ResponseEntity.ok(newUser);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
@@ -51,7 +42,6 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody UserDto userDto) {
         try {
-            // Authenticate user
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             userDto.getEmail(),
@@ -59,16 +49,11 @@ public class AuthController {
                     )
             );
 
-            // Load user details
             final UserDetails userDetails = userDetailsService.loadUserByUsername(userDto.getEmail());
             final String token = jwtUtil.generateToken(userDetails);
 
-            // Return user info and token
-            Optional<UserDto> userOpt = userService.getUserByEmail(userDto.getEmail());
-            if (!userOpt.isPresent()) {
-                return ResponseEntity.badRequest().body("User not found");
-            }
-            UserDto user = userOpt.get();
+            UserDto user = userService.getUserByEmail(userDto.getEmail())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
             Map<String, Object> response = new HashMap<>();
             response.put("user", user);

@@ -7,11 +7,22 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
-    UserDto createUser(UserDto userDto);
-    Optional<UserDto> getUserById(Long id);
+
+    // ===== Auth =====
+    UserDto registerUser(UserDto userDto);
+    UserDto loginUser(String email, String password);
+
+    // ===== Поиск пользователей =====
+    Optional<User> findByEmail(String email);
     Optional<UserDto> getUserByEmail(String email);
+    Optional<UserDto> getUserById(Long id);
     List<UserDto> getAllUsers();
+
+    // ===== Проверки =====
+    boolean existsByEmail(String email);
+
+    // ===== CRUD (для админа) =====
+    UserDto createUser(UserDto userDto);
     UserDto updateUser(Long id, UserDto userDto);
     void deleteUser(Long id);
-    boolean existsByEmail(String email);
 }

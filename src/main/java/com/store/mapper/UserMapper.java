@@ -8,22 +8,12 @@ import org.mapstruct.factory.Mappers;
 
 @Mapper
 public interface UserMapper {
-    
+
     UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
-    
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "email", source = "email")
-    @Mapping(target = "firstName", source = "firstName")
-    @Mapping(target = "lastName", source = "lastName")
-    @Mapping(target = "role", source = "role")
-    @Mapping(target = "password", ignore = true)  // Don't expose password in DTO
+
+    @Mapping(target = "password", ignore = true)
     UserDto toDto(User user);
-    
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "email", source = "email")
-    @Mapping(target = "password", source = "password")
-    @Mapping(target = "firstName", source = "firstName")
-    @Mapping(target = "lastName", source = "lastName")
-    @Mapping(target = "role", source = "role")
+
+    @Mapping(target = "password", ignore = true)
     User toEntity(UserDto userDto);
 }
