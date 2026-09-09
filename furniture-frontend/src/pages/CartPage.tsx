@@ -4,7 +4,7 @@ import { Trash2, Plus, Minus, ArrowLeft, CheckCircle } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../api/client';
-import { formatPrice } from '../utils/format';
+import { formatPriceFrom } from '../utils/format';
 import type { CreateOrderRequest } from '../types';
 
 export const CartPage = () => {
@@ -159,7 +159,7 @@ export const CartPage = () => {
                                         {item.product.category?.name || 'Категория не указана'}
                                     </p>
                                     <p className="text-sm text-gray-500 mt-1">
-                                        {formatPrice(item.product.price)} × {item.quantity}
+                                        {formatPriceFrom(item.product.price)} / шт.
                                     </p>
                                 </div>
 
@@ -183,7 +183,7 @@ export const CartPage = () => {
 
                                 {/* Цена */}
                                 <div className="text-right min-w-[100px]">
-                                    <p className="font-bold text-gray-900">{formatPrice(item.product.price * item.quantity)}</p>
+                                    <p className="font-bold text-gray-900">{formatPriceFrom(item.product.price * item.quantity)}</p>
                                     <button
                                         onClick={() => removeFromCart(item.product.id)}
                                         className="text-sm text-red-600 hover:text-red-700 mt-1 flex items-center gap-1 justify-end"
@@ -199,9 +199,12 @@ export const CartPage = () => {
                     {/* Итого */}
                     <div className="card p-4 bg-gray-50">
                         <div className="flex justify-between items-center">
-                            <span className="text-lg font-medium">Итого:</span>
-                            <span className="text-2xl font-bold text-primary">{formatPrice(total)}</span>
+                            <span className="text-lg font-medium">Предварительно:</span>
+                            <span className="text-2xl font-bold text-primary">{formatPriceFrom(total)}</span>
                         </div>
+                        <p className="mt-2 text-xs text-gray-500">
+                            Точную стоимость подтвердит менеджер после расчёта заказа.
+                        </p>
                     </div>
                 </div>
 
@@ -258,7 +261,7 @@ export const CartPage = () => {
                                     value={customerData.phone}
                                     onChange={(e) => setCustomerData({ ...customerData, phone: e.target.value })}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                                    placeholder="+7 (999) 123-45-67"
+                                    placeholder="+7 (920) 008-54-16"
                                 />
                             </div>
 
@@ -278,7 +281,7 @@ export const CartPage = () => {
                                 disabled={isSubmitting}
                                 className="w-full btn-primary py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {isSubmitting ? 'Оформление...' : `Оформить за ${formatPrice(total)}`}
+                                {isSubmitting ? 'Отправляем...' : 'Оформить заказ'}
                             </button>
 
                             {!isAuthenticated && (

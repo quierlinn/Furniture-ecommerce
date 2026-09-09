@@ -6,7 +6,7 @@ import { ProductCard } from '../components/catalog/ProductCard';
 import { useCart } from '../hooks/useCart';
 import { api } from '../api/client';
 import type { Product, PaginatedProducts } from '../types';
-import { formatPrice } from '../utils/format';
+import { formatPriceFrom } from '../utils/format';
 import { getProductImage } from '../utils/placeholders';
 
 export const ProductPage = () => {
@@ -147,10 +147,12 @@ export const ProductPage = () => {
                     <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{product.name}</h1>
 
                     <div className="space-y-2">
-                        <p className="text-3xl font-bold text-gray-900">{formatPrice(product.price)}</p>
-                        <p className="text-sm text-success flex items-center gap-1">
-                            <Check className="w-4 h-4" />
-                            В наличии
+                        <p className="text-3xl font-extrabold tracking-tight text-ink">
+                            {formatPriceFrom(product.price)}
+                        </p>
+                        <p className="text-sm leading-relaxed text-ink-soft">
+                            Стартовая цена за минимальную комплектацию. Точную стоимость под ваши
+                            размеры и материалы посчитаем при подтверждении заказа.
                         </p>
                     </div>
 

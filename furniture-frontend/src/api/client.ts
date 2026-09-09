@@ -10,10 +10,11 @@ import type {
     Category,
     Order,
     CreateOrderRequest,
-    PaginatedProducts  // ✅ Добавлен новый тип
+    PaginatedProducts, PortfolioWork,
+    PortfolioWorkRequest, SupportTicket, SupportStats
 } from '../types';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = '/api';
 
 class ApiClient {
     private client: AxiosInstance;
@@ -93,12 +94,22 @@ class ApiClient {
 
     // ===== CATEGORIES =====
     async getCategories(): Promise<Category[]> {
-        return [
-            { id: 1, name: 'Кухни' },
-            { id: 2, name: 'Прихожие' },
-            { id: 3, name: 'Гостиные' },
-            { id: 4, name: 'Спальни' },
-        ];
+        const { data } = await this.client.get<Category[]>('/categories');
+        return data;
+    }
+    // ===== CATEGORIES (Admin) =====
+    async createCategory(name: string): Promise<Category> {
+        const { data } = await this.client.post<Category>('/categories', { name });
+        return data;
+    }
+
+    async updateCategory(id: number, name: string): Promise<Category> {
+        const { data } = await this.client.put<Category>(`/categories/${id}`, { name });
+        return data;
+    }
+
+    async deleteCategory(id: number): Promise<void> {
+        await this.client.delete(`/categories/${id}`);
     }
 
     // src/api/client.ts
@@ -137,6 +148,64 @@ class ApiClient {
         categoryId: number;
     }): Promise<Product> {
         const { data } = await this.client.post<Product>('/products', productData);
+        return data;
+    }
+
+    // ===== PORTFOLIO =====
+    async getPortfolio(categoryId?: number): Promise<PortfolioWork[]> {
+        const params = categoryId ? `?categoryId=${categoryId}` : '';
+        const { data } = await this.client.get<PortfolioWork[]>(`/portfolio${params}`);
+        return data;
+    }
+
+    async getPortfolioWork(id: number): Promise<PortfolioWork> {
+        const { data } = await this.client.get<PortfolioWork>(`/portfolio/${id}`);
+        return data;
+    }
+
+    // ===== PORTFOLIO (Admin) =====
+    async createPortfolioWork(payload: PortfolioWorkRequest): Promise<PortfolioWork> {
+        const { data } = await this.client.post<PortfolioWork>('/portfolio', payload);
+        return data;
+    }
+
+    async updatePortfolioWork(id: number, payload: PortfolioWorkRequest): Promise<PortfolioWork> {
+        const { data } = await this.client.put<PortfolioWork>(`/portfolio/${id}`, payload);
+        return data;
+    }
+
+    async deletePortfolioWork(id: number): Promise<void> {
+        await this.client.delete(`/portfolio/${id}`);
+    }
+
+    // ===== SUPPORT (Admin) =====
+    async getSupportTickets(): Promise<SupportTicket[]> {
+        const { data } = await this.client.get<SupportTicket[]>('/admin/support');
+        return data;
+    }
+
+    async getSupportTicket(id: number): Promise<SupportTicket> {
+        const { data } = await this.client.get<SupportTicket>(`/admin/support/${id}`);
+        return data;
+    }
+
+    async getSupportStats(): Promise<SupportStats> {
+        const { data } = await this.client.get<SupportStats>('/admin/support/stats');
+        return data;
+    }
+
+    async supportReply(id: number, text: string): Promise<SupportTicket> {
+        const { data } = await this.client.post<SupportTicket>(`/admin/support/${id}/reply`, { text });
+        return data;
+    }
+
+    async supportResolve(id: number): Promise<SupportTicket> {
+        const { data } = await this.client.post<SupportTicket>(`/admin/support/${id}/resolve`);
+        return data;
+    }
+
+    async supportClose(id: number): Promise<SupportTicket> {
+        const { data } = await this.client.post<SupportTicket>(`/admin/support/${id}/close`);
         return data;
     }
 

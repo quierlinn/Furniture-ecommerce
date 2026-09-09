@@ -98,6 +98,18 @@ export const AdminDashboard = () => {
                     <h3 className="text-lg font-bold mb-2">📋 Управление заказами</h3>
                     <p className="text-gray-600">Просмотр и обработка заказов клиентов</p>
                 </Link>
+                <Link to="/admin/categories" className="card p-6 hover:shadow-md transition-shadow">
+                    <h3 className="text-lg font-bold mb-2">🏷️ Управление категориями</h3>
+                    <p className="text-gray-600">Создание, переименование и удаление категорий каталога</p>
+                </Link>
+                <Link to="/admin/portfolio" className="card p-6 hover:shadow-md transition-shadow">
+                    <h3 className="text-lg font-bold mb-2">🖼 Портфолио</h3>
+                    <p className="text-gray-600">Публикация работ и управление ими</p>
+                </Link>
+                <Link to="/admin/support" className="card p-6 hover:shadow-md transition-shadow">
+                    <h3 className="text-lg font-bold mb-2">💬 Тех. поддержка</h3>
+                    <p className="text-gray-600">Обращения клиентов из Telegram-бота</p>
+                </Link>
             </div>
         </div>
     );

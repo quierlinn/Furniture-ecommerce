@@ -1,12 +1,12 @@
 ﻿import { Phone, Send, MessageCircle, MapPin } from 'lucide-react';
+import {SUPPORT_BOT_URL} from "../lib/support.ts";
 
 export const ContactsPage = () => {
     const contacts = {
         phone: '+7 (920) 008-54-16',
         email: 'info@furniturestore.ru',
         address: 'г. Москва, ул. Красная Площадь, д. 1',
-        telegramChannel: 'https://t.me/furniture_store_channel',
-        telegramProfile: 'https://t.me/furniture_support',
+        telegramChannel: 'https://t.me/furniture_store_channel'
     };
 
     return (
@@ -40,8 +40,8 @@ export const ContactsPage = () => {
                         <MessageCircle className="w-5 h-5 text-primary mt-1" />
                         <div>
                             <p className="font-medium">Поддержка</p>
-                            <a href={contacts.telegramProfile} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                                @furniture_support
+                            <a href={SUPPORT_BOT_URL} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                                @riff_support
                             </a>
                         </div>
                     </div>

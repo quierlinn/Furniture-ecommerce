@@ -1,6 +1,7 @@
 import {BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {Header} from './components/layout/Header';
+import { Footer } from './components/layout/Footer';
 import {HomePage} from './pages/HomePage';
 import {CatalogPage} from './pages/CatalogPage';
 import {ProductPage} from './pages/ProductPage';
@@ -16,6 +17,11 @@ import {OrdersAdmin} from './pages/admin/OrdersAdmin';
 import { AboutPage } from './pages/AboutPage';
 import { DeliveryPage } from './pages/DeliveryPage';
 import { ContactsPage } from './pages/ContactsPage';
+import { CategoriesAdmin } from './pages/admin/CategoriesAdmin';
+import { PortfolioPage } from './pages/PortfolioPage';
+import { PortfolioWorkPage } from './pages/PortfolioWorkPage';
+import { PortfolioAdmin } from './pages/admin/PortfolioAdmin';
+import { SupportAdmin } from './pages/admin/SupportAdmin';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -70,19 +76,27 @@ function AppRoutes() {
                     <Route path="/admin/orders" element={
                         <AdminRoute><OrdersAdmin/></AdminRoute>
                     }/>
+                    <Route path="/admin/categories" element={
+                        <AdminRoute><CategoriesAdmin /></AdminRoute>
+                    }/>
+                    <Route path="/admin/portfolio" element={
+                        <AdminRoute><PortfolioAdmin /></AdminRoute>
+                    }/>
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/delivery" element={<DeliveryPage />} />
                     <Route path="/contacts" element={<ContactsPage />} />
+                    <Route path="/portfolio" element={<PortfolioPage />} />
+                    <Route path="/portfolio/:id" element={<PortfolioWorkPage />} />
+                    <Route path="/admin/support" element={
+                        <AdminRoute><SupportAdmin /></AdminRoute>
+                    }/>
+
 
                     <Route path="*" element={<div className="text-center py-20">🔍 Страница не найдена</div>}/>
                 </Routes>
             </main>
 
-            <footer className="bg-gray-900 text-white py-8 mt-auto">
-                <div className="container mx-auto px-4 text-center text-sm text-gray-400">
-                    © 2026 FurnitureStore. Все права защищены.
-                </div>
-            </footer>
+            <Footer />
         </div>
     );
 }
