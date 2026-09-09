@@ -18,7 +18,7 @@ ON CONFLICT (name) DO NOTHING;
 -- 🔹 2. Пользователи (уникальность по email уже есть)
 -- Пароль для всех: 'password123' (хэш через BCrypt)
 INSERT INTO users (email, password, first_name, last_name, role, created_at) VALUES
-                                                                                 ('admin@example.com', '$2a$10$XZv8JZv8JZv8JZv8JZv8JOqZv8JZv8JZv8JZv8JZv8JZv8JZv8JZv', 'Админ', 'Админович', 'ADMIN', NOW()),
+                                                                                 ('peetzzz.tim@gmail.com', '$2a$12$.9Hwyh6APEK46KGAcN9PNuR9z0lQVhIM6TEuTWYVmxjUYPbqttD3q', 'Пётр', 'Тимофеев', 'ADMIN', NOW()),
                                                                                  ('user@example.com', '$2a$10$XZv8JZv8JZv8JZv8JZv8JOqZv8JZv8JZv8JZv8JZv8JZv8JZv8JZv', 'Пользователь', 'Пользовательский', 'USER', NOW()),
                                                                                  ('test@example.com', '$2a$10$XZv8JZv8JZv8JZv8JZv8JOqZv8JZv8JZv8JZv8JZv8JZv8JZv8JZv', 'Тест', 'Тестовый', 'USER', NOW())
 ON CONFLICT (email) DO NOTHING;
@@ -71,12 +71,11 @@ DO $$
 
         IF user_id IS NOT NULL THEN
             -- Создаём заказ со статусом PENDING
-            INSERT INTO orders (user_id, total_price, status, created_at, updated_at)
+            INSERT INTO orders (user_id, total_amount, status, created_at, updated_at)
             VALUES (user_id, 45000.00, 'PENDING', NOW(), NOW())
             RETURNING id INTO order_id;
 
-            -- Создаём ещё один заказ со статусом DELIVERED (неделю назад)
-            INSERT INTO orders (user_id, total_price, status, created_at, updated_at)
+            INSERT INTO orders (user_id, total_amount, status, created_at, updated_at)
             VALUES (user_id, 65451.00, 'DELIVERED', NOW() - INTERVAL '7 days', NOW() - INTERVAL '7 days');
         END IF;
     END $$;

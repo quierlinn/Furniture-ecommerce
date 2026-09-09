@@ -1,14 +1,11 @@
-﻿/**
- * Форматирует число в строку с валютой (рубли).
- * Пример: 65451 → "65 451 руб."
- */
-export const formatPrice = (price: number): string => {
-    return new Intl.NumberFormat('ru-RU', {
-        style: 'currency',
-        currency: 'RUB',
-        maximumFractionDigits: 0,
-    }).format(price).replace('₽', 'руб.');
-};
+﻿export function formatPrice(price: number): string {
+    return `${price.toLocaleString('ru-RU')} ₽`;
+}
+
+/** Стартовая цена: «от 99 999 ₽» */
+export function formatPriceFrom(price: number): string {
+    return `от ${price.toLocaleString('ru-RU')} ₽`;
+}
 
 /**
  * Форматирует дату в читаемый вид.

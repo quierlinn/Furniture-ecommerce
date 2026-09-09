@@ -1,8 +1,8 @@
 package com.store.controller;
 
-import com.store.dto.CategoryDto;
-import com.store.dto.CategoryRequest;
-import com.store.service.CategoryService;
+import com.store.dto.PortfolioDtos;
+import com.store.dto.PortfolioDtos.PortfolioWorkDto;
+import com.store.service.PortfolioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,21 +13,20 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/categories")
-public class CategoryController {
+@RequestMapping("/api/portfolio")
+public class PortfolioController {
 
     @Autowired
-    private CategoryService categoryService;
+    private PortfolioService portfolioService;
 
     @GetMapping
-    public ResponseEntity<List<CategoryDto>> getAllCategories() {
-        List<CategoryDto> categories = categoryService.getAllCategories();
-        return ResponseEntity.ok(categories);
+    public ResponseEntity<List<PortfolioWorkDto>> getAll(@RequestParam(required = false) Long categoryId) {
+        return ResponseEntity.ok(portfolioService.getAll(categoryId));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CategoryDto> getCategoryById(@PathVariable Long id) {
-        return categoryService.getCategoryById(id)
+    public ResponseEntity<PortfolioWorkDto> getById(@PathVariable Long id) {
+        return portfolioService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -35,10 +34,9 @@ public class CategoryController {
     // ===== ADMIN: создание =====
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> create(@RequestBody CategoryRequest request) {
+    public ResponseEntity<?> create(@RequestBody PortfolioDtos.PortfolioWorkRequest request) {
         try {
-            CategoryDto created = categoryService.createCategory(request.name());
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+            return ResponseEntity.status(HttpStatus.CREATED).body(portfolioService.create(request));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
@@ -47,9 +45,9 @@ public class CategoryController {
     // ===== ADMIN: обновление =====
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody CategoryRequest request) {
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody PortfolioDtos.PortfolioWorkRequest request) {
         try {
-            return ResponseEntity.ok(categoryService.updateCategory(id, request.name()));
+            return ResponseEntity.ok(portfolioService.update(id, request));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
@@ -60,7 +58,7 @@ public class CategoryController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         try {
-            categoryService.deleteCategory(id);
+            portfolioService.delete(id);
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));

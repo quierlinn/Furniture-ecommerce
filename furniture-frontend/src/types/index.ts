@@ -109,3 +109,62 @@ export interface CreateOrderRequest {
     customerPhone: string;
     deliveryAddress: string;
 }
+
+// ===== PORTFOLIO =====
+export interface PortfolioReview {
+    id: number;
+    authorName: string;
+    text: string;
+    rating: number;
+    createdAt: string;
+}
+
+export interface PortfolioWork {
+    id: number;
+    title: string;
+    description: string;
+    categoryId?: number | null;
+    categoryName?: string | null;
+    images: string[];
+    createdAt: string;
+    reviews: PortfolioReview[];
+}
+
+export interface PortfolioWorkRequest {
+    title: string;
+    description: string;
+    categoryId?: number | null;
+    images: string[];
+}
+
+// ===== SUPPORT =====
+export type SupportStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+export type SupportSender = 'USER' | 'ADMIN' | 'SYSTEM';
+
+export interface SupportMessage {
+    id: number;
+    sender: SupportSender;
+    text: string;
+    createdAt: string;
+}
+
+export interface SupportTicket {
+    id: number;
+    telegramChatId?: number | null;
+    telegramUsername?: string | null;
+    telegramName?: string | null;
+    status: SupportStatus;
+    subject?: string | null;
+    lastMessage?: string | null;
+    createdAt: string;
+    updatedAt: string;
+    unreadByAdmin: number;
+    messages: SupportMessage[];
+}
+
+export interface SupportStats {
+    open: number;
+    inProgress: number;
+    resolved: number;
+    total: number;
+}
