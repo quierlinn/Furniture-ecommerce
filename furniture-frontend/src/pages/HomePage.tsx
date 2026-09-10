@@ -169,7 +169,7 @@ export const HomePage = () => {
                     </Reveal>
                     <Reveal delay={0.1} className="flex flex-wrap gap-3">
                         <Link to="/catalog" className="btn-primary">Смотреть каталог</Link>
-                        <a href="tel:+79991234567" className="inline-flex items-center gap-2 rounded-btn border border-cream/25 px-6 py-3 text-sm font-semibold text-cream transition-colors hover:border-cream/60">
+                        <a href="tel:+79200085416" className="inline-flex items-center gap-2 rounded-btn border border-cream/25 px-6 py-3 text-sm font-semibold text-cream transition-colors hover:border-cream/60">
                             +7 (920) 008-54-16
                         </a>
                     </Reveal>

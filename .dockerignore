@@ -1,0 +1,9 @@
+﻿.git
+.idea
+.mvn
+target
+furniture-frontend/node_modules
+furniture-frontend/dist
+*.md
+.env
+docker-compose*.yml

@@ -51,7 +51,7 @@ export const Footer = () => {
                     <h3 className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-cream/40">Связаться</h3>
                     <ul className="space-y-2.5 text-sm font-medium">
                         <li>
-                            <a href="tel:+79991234567" className="flex items-center gap-2 text-cream/75 transition-colors hover:text-cream">
+                            <a href="tel:+79200085416" className="flex items-center gap-2 text-cream/75 transition-colors hover:text-cream">
                                 <Phone className="h-4 w-4" strokeWidth={1.75} /> +7 (920) 008-54-16
                             </a>
                         </li>
