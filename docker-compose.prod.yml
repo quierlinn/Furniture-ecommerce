@@ -1,0 +1,62 @@
+﻿services:
+  db:
+    image: postgres:15-alpine
+    container_name: riff-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-furniture_store}
+      POSTGRES_USER: ${DB_USER:-riff}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-riff} -d ${DB_NAME:-furniture_store}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks: [riff]
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: riff-backend
+    restart: unless-stopped
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/${DB_NAME:-furniture_store}
+      DB_USER: ${DB_USER:-riff}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:?TELEGRAM_BOT_TOKEN is required}
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-Riff_support_bot}
+      TELEGRAM_ADMIN_CHAT_ID: ${TELEGRAM_ADMIN_CHAT_ID:?required}
+      APP_BASE_URL: ${APP_BASE_URL:-https://mebelriff.ru}
+      SHOW_SQL: "false"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [riff]
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: riff-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/active.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
+    depends_on:
+      - backend
+    networks: [riff]
+
+volumes:
+  pgdata:
+
+networks:
+  riff:

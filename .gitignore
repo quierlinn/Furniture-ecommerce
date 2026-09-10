@@ -37,3 +37,8 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+# Secrets
+.env
+src/main/resources/application-dev.properties
+nginx/active.conf
