@@ -81,7 +81,7 @@ public class ProductServiceImpl implements ProductService {
         existing.setName(productDto.getName());
         existing.setDescription(productDto.getDescription());
         existing.setPrice(productDto.getPrice());
-        existing.setImageUrl(productDto.getImageUrl());
+        existing.setImages(productDto.getImages());
 
         if (productDto.getCategoryId() != null) {
             Category category = categoryRepository.findById(productDto.getCategoryId())
