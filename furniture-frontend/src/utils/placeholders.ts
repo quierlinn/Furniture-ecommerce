@@ -38,7 +38,7 @@ const FALLBACK = [
 ];
 
 export function getProductImage(product: Product): string {
-    if (product.imageUrl) return product.imageUrl;
+    if (product.images?.[0]) return product.images[0];
     const pool = POOLS[product.categoryId ?? 0] ?? FALLBACK;
     return pool[product.id % pool.length];
 }

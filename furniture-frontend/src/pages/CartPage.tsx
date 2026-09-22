@@ -146,7 +146,7 @@ export const CartPage = () => {
                                 {/* Изображение */}
                                 <div className="w-24 h-24 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
                                     <img
-                                        src={item.product.imageUrl || `https://placehold.co/100x100?text=${encodeURIComponent(item.product.name.substring(0, 10))}`}
+                                        src={item.product.images?.[0] || 'https://placehold.co/80x80?text=No+Image'}
                                         alt={item.product.name}
                                         className="w-full h-full object-cover"
                                     />

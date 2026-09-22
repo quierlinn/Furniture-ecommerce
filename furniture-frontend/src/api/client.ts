@@ -9,7 +9,7 @@ import type {
     Order,
     CreateOrderRequest,
     PaginatedProducts, PortfolioWork,
-    PortfolioWorkRequest, SupportTicket, SupportStats
+    PortfolioWorkRequest, SupportTicket, SupportStats, ProductFilters
 } from '../types';
 
 const API_BASE_URL = '/api';
@@ -81,6 +81,20 @@ class ApiClient {
             params: { page, size, sortBy: 'id', sortDir: 'desc' },
         });
         return data.content;
+    }
+
+    async getProducts(filters: ProductFilters): Promise<PaginatedProducts> {
+        const { data } = await this.client.get<PaginatedProducts>('/products', {
+            params: {
+                page: filters.page,
+                size: filters.size,
+                categoryId: filters.categoryId,
+                query: filters.query,
+                sortBy: filters.sortBy,
+                sortDir: filters.sortDir,
+            },
+        });
+        return data;
     }
 
     async getProductById(id: number): Promise<Product> {
