@@ -5,8 +5,6 @@ import type {
     User,
     AuthResponse,
     Product,
-    // ✅ ProductPage удалён — используем PaginatedProducts
-    ProductFilters,
     Category,
     Order,
     CreateOrderRequest,
@@ -73,30 +71,16 @@ class ApiClient {
     }
 
     // ===== PRODUCTS =====
-    async getProducts(filters: ProductFilters = {}): Promise<PaginatedProducts> {
-        const params = new URLSearchParams({
-            page: String(filters.page ?? 0),
-            size: String(filters.size ?? 20),
-            sortBy: filters.sortBy ?? 'id',
-            sortDir: filters.sortDir ?? 'asc',
-        });
-
-        if (filters.query) params.append('q', filters.query);
-
-        // Определяем эндпоинт в зависимости от параметров
-        let endpoint = '/products';
-
-        if (filters.categoryId && filters.query) {
-            endpoint = `/products/search/category/${filters.categoryId}`;
-        } else if (filters.categoryId) {
-            endpoint = `/products/category/${filters.categoryId}`;
-        } else if (filters.query) {
-            endpoint = '/products/search';
-        }
-
-        // ✅ Исправлено: возвращаем PaginatedProducts вместо ProductPage
-        const { data } = await this.client.get<PaginatedProducts>(`${endpoint}?${params}`);
+    async getProduct(id: number): Promise<Product> {
+        const { data } = await this.client.get<Product>(`/products/${id}`);
         return data;
+    }
+
+    async getProductsByCategory(categoryId: number, page = 0, size = 4): Promise<Product[]> {
+        const { data } = await this.client.get<PaginatedProducts>(`/products/category/${categoryId}`, {
+            params: { page, size, sortBy: 'id', sortDir: 'desc' },
+        });
+        return data.content;
     }
 
     async getProductById(id: number): Promise<Product> {

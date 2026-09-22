@@ -1,152 +1,93 @@
-﻿import { useParams, Link, useNavigate } from 'react-router-dom';
+﻿import { useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, ShoppingCart, Minus, Plus, Check } from 'lucide-react';
-import { useState } from 'react';
-import { ProductCard } from '../components/catalog/ProductCard';
-import { useCart } from '../hooks/useCart';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { ArrowLeft } from 'lucide-react';
 import { api } from '../api/client';
-import type { Product, PaginatedProducts } from '../types';
+import type { Product } from '../types';
 import { formatPriceFrom } from '../utils/format';
-import { getProductImage } from '../utils/placeholders';
+import { cn } from '../lib/cn';
 
 export const ProductPage = () => {
     const { id } = useParams<{ id: string }>();
-    const navigate = useNavigate();
-    const { addToCart } = useCart();
-    const [quantity, setQuantity] = useState<number>(1);
-    const [addedToCart, setAddedToCart] = useState<boolean>(false);
+    const [activeImg, setActiveImg] = useState(0);
 
-    const numericId = id ? Number(id) : null;
-
-    // ✅ ИСПРАВЛЕНО: data: product
     const { data: product, isLoading, isError } = useQuery<Product>({
-        queryKey: ['product', numericId],
-        queryFn: () => api.getProductById(numericId!),
-        enabled: numericId !== null,
-        staleTime: 5 * 60 * 1000,
+        queryKey: ['product', id],
+        queryFn: () => api.getProduct(Number(id)),
+        enabled: !!id,
     });
 
-    // ✅ ИСПРАВЛЕНО: data: relatedProducts
-    const { data: relatedProducts } = useQuery<PaginatedProducts>({
-        queryKey: ['products', 'category', product?.categoryId],
-        queryFn: () => api.getProducts({
-            categoryId: product?.categoryId ?? undefined,
-            size: 4,
-            sortBy: 'id',
-            sortDir: 'desc',
-        }),
+    const { data: similar = [] } = useQuery<Product[]>({
+        queryKey: ['similar', product?.categoryId],
+        queryFn: () => api.getProductsByCategory(product!.categoryId),
         enabled: !!product?.categoryId,
-        staleTime: 10 * 60 * 1000,
     });
 
-    const handleQuantityChange = (delta: number) => {
-        setQuantity(prev => Math.max(1, prev + delta));
-    };
-
-    const handleAddToCart = () => {
-        if (product) {
-            for (let i = 0; i < quantity; i++) {
-                addToCart(product);
-            }
-            setAddedToCart(true);
-            setTimeout(() => setAddedToCart(false), 2000);
-        }
-    };
-
-    if (isLoading) {
-        return (
-            <div className="py-12">
-                <div className="animate-pulse space-y-6">
-                    <div className="h-8 bg-gray-200 rounded w-48" />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="aspect-square bg-gray-200 rounded-lg" />
-                        <div className="space-y-4">
-                            <div className="h-6 bg-gray-200 rounded w-3/4" />
-                            <div className="h-4 bg-gray-200 rounded w-full" />
-                            <div className="h-4 bg-gray-200 rounded w-5/6" />
-                            <div className="h-10 bg-gray-200 rounded w-32" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
+    if (isLoading) return <div className="py-20 text-center text-ink-soft">Загрузка...</div>;
     if (isError || !product) {
         return (
-            <div className="text-center py-20">
-                <h2 className="text-2xl font-bold text-red-600 mb-4">❌ Товар не найден</h2>
-                <p className="text-gray-600 mb-6">Возможно, товар был удалён или ссылка устарела</p>
-                <Link to="/catalog" className="btn-primary inline-flex items-center gap-2">
-                    <ArrowLeft className="w-4 h-4" />
-                    Вернуться в каталог
-                </Link>
+            <div className="py-20 text-center">
+                <h1 className="text-2xl font-extrabold">Товар не найден</h1>
+                <Link to="/catalog" className="btn-secondary mt-6 inline-flex">← В каталог</Link>
             </div>
         );
     }
 
-    const imageUrl = getProductImage(product);
-    const relatedItems = relatedProducts?.content.filter((p: Product) => p.id !== product.id).slice(0, 4) || [];
+    const images = product.images?.length ? product.images : [];
 
     return (
-        <div className="space-y-12">
-            <nav className="text-sm text-gray-500">
-                <ol className="flex items-center gap-2">
-                    <li>
-                        <Link to="/" className="hover:text-primary transition-colors">Главная</Link>
-                    </li>
-                    <li>/</li>
-                    <li>
-                        <Link
-                            to={`/catalog?categoryId=${product.categoryId ?? ''}`}
-                            className="hover:text-primary transition-colors"
-                        >
-                            {product.category?.name || 'Категория'}
-                        </Link>
-                    </li>
-                    <li>/</li>
-                    <li className="text-gray-900 font-medium truncate max-w-xs">{product.name}</li>
-                </ol>
-            </nav>
+        <div className="container-site py-10 md:py-16">
+            <Link
+                to="/catalog"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-ink-soft transition-colors hover:text-walnut"
+            >
+                <ArrowLeft className="h-4 w-4" strokeWidth={1.75} /> В каталог
+            </Link>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-                <div className="space-y-4">
-                    <div className="card overflow-hidden">
-                        <img
-                            src={imageUrl}
-                            alt={product.name}
-                            className="w-full aspect-square object-cover"
-                        />
-                    </div>
-                    <div className="flex gap-2">
-                        {[1, 2, 3].map((i: number) => (
-                            <button
-                                key={i}
-                                className="w-20 h-20 border-2 border-transparent hover:border-primary rounded-lg overflow-hidden transition-colors"
-                            >
+            <div className="mt-8 grid gap-10 lg:grid-cols-[1.2fr_1fr] lg:gap-14">
+                <div>
+                    {images.length > 0 ? (
+                        <>
+                            <div className="overflow-hidden rounded-img bg-sand">
                                 <img
-                                    src={imageUrl}
-                                    alt={`${product.name} - вид ${i}`}
-                                    className="w-full h-full object-cover"
+                                    src={images[activeImg] ?? images[0]}
+                                    alt={product.name}
+                                    className="aspect-[4/3] w-full object-cover"
                                 />
-                            </button>
-                        ))}
-                    </div>
+                            </div>
+                            {images.length > 1 && (
+                                <div className="mt-3 flex gap-3 overflow-x-auto">
+                                    {images.map((img, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => setActiveImg(i)}
+                                            className={cn(
+                                                'h-20 w-24 shrink-0 overflow-hidden rounded-btn transition-all',
+                                                i === activeImg
+                                                    ? 'ring-2 ring-walnut ring-offset-2 ring-offset-cream'
+                                                    : 'opacity-70 hover:opacity-100'
+                                            )}
+                                        >
+                                            <img src={img} alt="" className="h-full w-full object-cover" />
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <div className="flex aspect-[4/3] items-center justify-center rounded-img bg-sand text-sm text-ink-soft">
+                            Изображение скоро появится
+                        </div>
+                    )}
                 </div>
 
-                <div className="space-y-6">
-                    {product.category && (
-                        <Link
-                            to={`/catalog?categoryId=${product.categoryId ?? ''}`}
-                            className="inline-block text-sm text-primary hover:underline"
-                        >
-                            {product.category.name}
-                        </Link>
-                    )}
+                <div>
+                    <p className="overline-title">{product.category?.name}</p>
+                    <h1 className="mt-3 text-3xl font-extrabold tracking-tight md:text-4xl">{product.name}</h1>
 
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{product.name}</h1>
-
-                    <div className="space-y-2">
+                    <div className="mt-6 space-y-2">
                         <p className="text-3xl font-extrabold tracking-tight text-ink">
                             {formatPriceFrom(product.price)}
                         </p>
@@ -156,79 +97,63 @@ export const ProductPage = () => {
                         </p>
                     </div>
 
-                    <div className="prose prose-sm text-gray-600">
-                        <p>{product.description || 'Описание товара будет добавлено позже.'}</p>
+                    <div className="mt-8 flex flex-wrap gap-3">
+                        <Link to="/contacts" className="btn-primary">Обсудить заказ</Link>
+                        <Link to="/catalog" className="btn-secondary">В каталог</Link>
                     </div>
-
-                    <div className="space-y-4 pt-4 border-t">
-                        <div className="flex items-center gap-4">
-                            <span className="text-sm font-medium text-gray-700">Количество:</span>
-                            <div className="flex items-center border border-gray-300 rounded-lg">
-                                <button
-                                    onClick={() => handleQuantityChange(-1)}
-                                    className="p-2 hover:bg-gray-50 disabled:opacity-50"
-                                    disabled={quantity <= 1}
-                                >
-                                    <Minus className="w-4 h-4" />
-                                </button>
-                                <span className="w-12 text-center font-medium">{quantity}</span>
-                                <button
-                                    onClick={() => handleQuantityChange(1)}
-                                    className="p-2 hover:bg-gray-50"
-                                >
-                                    <Plus className="w-4 h-4" />
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-3">
-                            <button
-                                onClick={handleAddToCart}
-                                className={`btn-primary flex-1 flex items-center justify-center gap-2 py-3 text-lg transition-all ${
-                                    addedToCart ? 'bg-success hover:bg-green-600' : ''
-                                }`}
-                            >
-                                {addedToCart ? (
-                                    <>
-                                        <Check className="w-5 h-5" />
-                                        Добавлено!
-                                    </>
-                                ) : (
-                                    <>
-                                        <ShoppingCart className="w-5 h-5" />
-                                        В корзину
-                                    </>
-                                )}
-                            </button>
-                            <button
-                                onClick={() => navigate(-1)}
-                                className="btn-outline px-6"
-                            >
-                                Назад
-                            </button>
-                        </div>
-                    </div>
-
-                    {product.id && (
-                        <p className="text-sm text-gray-500">
-                            Артикул: <span className="font-mono">#{product.id}</span>
-                        </p>
-                    )}
                 </div>
             </div>
 
-            {relatedItems.length > 0 && (
-                <section className="pt-8 border-t">
-                    <h2 className="text-2xl font-bold mb-6">Похожие товары</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {relatedItems.map((related: Product) => (
-                            <ProductCard
-                                key={related.id}
-                                product={related}
-                                onAddToCart={addToCart}
-                                onViewDetails={(pid: number) => navigate(`/product/${pid}`)}
-                            />
-                        ))}
+            {product.description && (
+                <section className="prose prose-ink mt-16 max-w-none md:mt-24">
+                    <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                            h1: (props) => <h1 className="text-4xl font-extrabold tracking-tight" {...props} />,
+                            h2: (props) => <h2 className="mt-12 text-3xl font-extrabold tracking-tight" {...props} />,
+                            h3: (props) => <h3 className="mt-8 text-2xl font-bold" {...props} />,
+                            p: (props) => <p className="mt-4 leading-relaxed text-ink-soft" {...props} />,
+                            ul: (props) => <ul className="mt-4 list-disc space-y-2 pl-6 text-ink-soft" {...props} />,
+                            ol: (props) => <ol className="mt-4 list-decimal space-y-2 pl-6 text-ink-soft" {...props} />,
+                            strong: (props) => <strong className="font-bold text-ink" {...props} />,
+                            a: (props) => (
+                                <a className="font-semibold text-terra hover:underline" target="_blank" rel="noopener noreferrer" {...props} />
+                            ),
+                            blockquote: (props) => (
+                                <blockquote className="my-6 border-l-4 border-walnut/40 pl-6 italic text-ink-soft" {...props} />
+                            ),
+                            hr: () => <hr className="my-10 border-ink/10" />,
+                        }}
+                    >
+                        {product.description}
+                    </ReactMarkdown>
+                </section>
+            )}
+
+            {similar.filter((p) => p.id !== product.id).length > 0 && (
+                <section className="mt-16 md:mt-24">
+                    <h2 className="overline-title">Похожие товары</h2>
+                    <h3 className="mt-2 text-2xl font-extrabold tracking-tight">В этой категории</h3>
+                    <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        {similar
+                            .filter((p) => p.id !== product.id)
+                            .slice(0, 3)
+                            .map((p) => (
+                                <Link key={p.id} to={`/product/${p.id}`} className="group block">
+                                    <div className="aspect-[4/3] overflow-hidden rounded-img bg-sand">
+                                        <img
+                                            src={p.images?.[0] || 'https://placehold.co/400x300?text=No+Image'}
+                                            alt={p.name}
+                                            loading="lazy"
+                                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                                        />
+                                    </div>
+                                    <h4 className="mt-3 font-bold tracking-tight transition-colors group-hover:text-walnut">
+                                        {p.name}
+                                    </h4>
+                                    <p className="mt-1 text-sm font-bold text-walnut">{formatPriceFrom(p.price)}</p>
+                                </Link>
+                            ))}
                     </div>
                 </section>
             )}

@@ -37,11 +37,9 @@ export interface Product {
     name: string;
     description: string;
     price: number;
-    imageUrl?: string;
-    categoryId?: number;
-    category?: Category;
-    createdAt?: string;
-    updatedAt?: string;
+    images: string[];
+    categoryId: number;
+    category: { id: number; name: string };
 }
 
 export interface PaginatedProducts {

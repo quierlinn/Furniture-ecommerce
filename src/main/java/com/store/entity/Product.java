@@ -1,8 +1,13 @@
 package com.store.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "products")
@@ -12,81 +17,44 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", nullable = false)
+    @Column(nullable = false)
     private String name;
 
-    @Column(name = "description", columnDefinition = "TEXT")
+    @Column(columnDefinition = "text")
     private String description;
 
-    @Column(name = "price", nullable = false, precision = 10, scale = 2)
+    @Column(nullable = false)
     private BigDecimal price;
 
-    @Column(name = "image_url")
-    private String imageUrl;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private List<String> images = new ArrayList<>();
 
-    // ✅ ЕДИНОЕ поле для связи с категорией
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", foreignKey = @ForeignKey(name = "fk_product_category"))
+    @JoinColumn(name = "category_id")
     private Category category;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
-    // Constructors
     public Product() {}
 
-    public Product(String name, String description, BigDecimal price, String imageUrl, Category category) {
-        this.name = name;
-        this.description = description;
-        this.price = price;
-        this.imageUrl = imageUrl;
-        this.category = category;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    // ===== Getters and Setters =====
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
-
     public BigDecimal getPrice() { return price; }
     public void setPrice(BigDecimal price) { this.price = price; }
-
-    public String getImageUrl() { return imageUrl; }
-    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
-
-    // ✅ Геттер для categoryId через category
-    public Long getCategoryId() {
-        return category != null ? category.getId() : null;
-    }
-
-    // ✅ Сеттер для categoryId — создаёт заглушку категории
-    public void setCategoryId(Long categoryId) {
-        if (categoryId != null) {
-            if (this.category == null) {
-                this.category = new Category();
-            }
-            this.category.setId(categoryId);
-        } else {
-            this.category = null;
-        }
-    }
-
+    public List<String> getImages() { return images; }
+    public void setImages(List<String> images) { this.images = images != null ? images : new ArrayList<>(); }
     public Category getCategory() { return category; }
     public void setCategory(Category category) { this.category = category; }
-
     public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

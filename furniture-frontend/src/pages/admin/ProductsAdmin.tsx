@@ -13,7 +13,7 @@ const productSchema = z.object({
     name: z.string().min(1, 'Название обязательно'),
     description: z.string().min(1, 'Описание обязательно'),
     price: z.number().min(0, 'Цена должна быть положительной'),
-    imageUrl: z.string().optional(),
+    imagesText: z.string().optional(),
     categoryId: z.number().min(1, 'Категория обязательна'),
 });
 
@@ -26,7 +26,6 @@ export const ProductsAdmin = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
 
-    // ✅ Надёжный способ: явно извлекаем data
     const productsQuery = useQuery<PaginatedProducts>({
         queryKey: ['products', 'admin', currentPage, searchQuery],
         queryFn: () => api.getProducts({
@@ -52,13 +51,22 @@ export const ProductsAdmin = () => {
             name: '',
             description: '',
             price: 0,
-            imageUrl: '',
+            imagesText: '',
             categoryId: 1,
         },
     });
 
     const createMutation = useMutation({
-        mutationFn: (formData: ProductFormData) => api.createProduct(formData),
+        mutationFn: (formData: ProductFormData) => {
+            const payload = {
+                name: formData.name,
+                description: formData.description,
+                price: formData.price,
+                images: formData.imagesText?.split('\n').map(s => s.trim()).filter(Boolean) || [],
+                categoryId: formData.categoryId,
+            };
+            return api.createProduct(payload);
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['products'] });
             setShowModal(false);
@@ -67,8 +75,16 @@ export const ProductsAdmin = () => {
     });
 
     const updateMutation = useMutation({
-        mutationFn: ({ id, formData }: { id: number; formData: ProductFormData }) =>
-            api.updateProduct(id, formData),
+        mutationFn: ({ id, formData }: { id: number; formData: ProductFormData }) => {
+            const payload = {
+                name: formData.name,
+                description: formData.description,
+                price: formData.price,
+                images: formData.imagesText?.split('\n').map(s => s.trim()).filter(Boolean) || [],
+                categoryId: formData.categoryId,
+            };
+            return api.updateProduct(id, payload);
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['products'] });
             setShowModal(false);
@@ -97,7 +113,7 @@ export const ProductsAdmin = () => {
         form.setValue('name', product.name);
         form.setValue('description', product.description);
         form.setValue('price', product.price);
-        form.setValue('imageUrl', product.imageUrl || '');
+        form.setValue('imagesText', product.images?.join('\n') || '');
         form.setValue('categoryId', product.categoryId || 1);
         setShowModal(true);
     };
@@ -113,6 +129,8 @@ export const ProductsAdmin = () => {
         setEditingProduct(null);
         form.reset();
     };
+
+    const previewImages = form.watch('imagesText')?.split('\n').map(s => s.trim()).filter(Boolean) || [];
 
     if (isLoading) {
         return <div className="py-20 text-center">Загрузка товаров...</div>;
@@ -178,7 +196,7 @@ export const ProductsAdmin = () => {
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 bg-gray-100 rounded overflow-hidden">
                                             <img
-                                                src={product.imageUrl || `https://placehold.co/40x40?text=${product.name.charAt(0)}`}
+                                                src={product.images?.[0] || `https://placehold.co/40x40?text=${product.name.charAt(0)}`}
                                                 alt={product.name}
                                                 className="w-full h-full object-cover"
                                             />
@@ -286,13 +304,26 @@ export const ProductsAdmin = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">URL изображения</label>
-                                <input
-                                    type="url"
-                                    {...form.register('imageUrl')}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                                    placeholder="https://..."
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Фотографии (по одной ссылке в строке)</label>
+                                <textarea
+                                    {...form.register('imagesText')}
+                                    rows={4}
+                                    placeholder={'https://... первое фото\nhttps://... второе фото'}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary font-mono text-xs"
                                 />
+                                {previewImages.length > 0 && (
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                        {previewImages.map((url, i) => (
+                                            <img
+                                                key={i}
+                                                src={url}
+                                                alt=""
+                                                className="h-16 w-20 rounded bg-sand object-cover"
+                                                onError={(e) => ((e.target as HTMLImageElement).style.opacity = '0.25')}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             <div>
