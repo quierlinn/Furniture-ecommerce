@@ -39,10 +39,22 @@ class ApiClient {
         this.client.interceptors.response.use(
             (response) => response,
             (error) => {
-                if (error.response?.status === 401) {
+                const status = error.response?.status;
+                const body = error.response?.data;
+
+                const isSessionExpired =
+                    status === 401 ||
+                    status === 403 ||
+                    (status === 400 && body?.error === 'Access Denied'); // fallback на старый бэк
+
+                if (isSessionExpired) {
                     localStorage.removeItem('jwt_token');
                     localStorage.removeItem('user');
-                    window.location.href = '/auth?redirect=' + encodeURIComponent(window.location.pathname);
+                    if (!window.location.pathname.startsWith('/auth')) {
+                        window.location.href =
+                            '/auth?reason=session-expired&redirect=' +
+                            encodeURIComponent(window.location.pathname);
+                    }
                 }
                 return Promise.reject(error);
             }

@@ -1,10 +1,11 @@
 ﻿import { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+
 
 // ===== Схемы валидации =====
 const loginSchema = z.object({
@@ -31,6 +32,10 @@ export const AuthPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
+
+    // ===== Баннер "сессия истекла" =====
+    const [searchParams] = useSearchParams();
+    const sessionExpired = searchParams.get('reason') === 'session-expired';
 
     const { login, register: registerUser, isAuthenticated, isLoading: authLoading } = useAuth();
     const navigate = useNavigate();
@@ -76,7 +81,6 @@ export const AuthPage = () => {
                 firstName: data.firstName,
                 lastName: data.lastName,
             });
-            // После регистрации переключаем на вход
             setActiveTab('login');
             loginForm.setValue('email', data.email);
         } catch (error: any) {
@@ -90,13 +94,19 @@ export const AuthPage = () => {
 
     return (
         <div className="max-w-md mx-auto py-8">
-            {/* Кнопка назад */}
             <Link to="/" className="inline-flex items-center gap-2 text-gray-600 hover:text-primary mb-6">
                 <ArrowLeft className="w-4 h-4" />
                 На главную
             </Link>
 
             <div className="card">
+                {/* Баннер "сессия истекла" */}
+                {sessionExpired && (
+                    <div className="mx-6 mt-6 rounded-lg border border-terra/30 bg-sand/40 px-4 py-3 text-sm text-walnut-dark">
+                        ⚠️ Сессия истекла. Войдите заново, чтобы продолжить работу.
+                    </div>
+                )}
+
                 {/* Вкладки */}
                 <div className="flex border-b">
                     <button
@@ -121,16 +131,13 @@ export const AuthPage = () => {
                     </button>
                 </div>
 
-                {/* Контент */}
                 <div className="p-6">
-                    {/* Ошибка сервера */}
                     {serverError && (
                         <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
                             {serverError}
                         </div>
                     )}
 
-                    {/* Форма входа */}
                     {activeTab === 'login' && (
                         <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
                             <div>
@@ -182,7 +189,6 @@ export const AuthPage = () => {
                         </form>
                     )}
 
-                    {/* Форма регистрации */}
                     {activeTab === 'register' && (
                         <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
@@ -292,7 +298,6 @@ export const AuthPage = () => {
                 </div>
             </div>
 
-            {/* Подсказка */}
             <p className="text-center text-sm text-gray-500 mt-4">
                 {activeTab === 'login' ? (
                     <>
