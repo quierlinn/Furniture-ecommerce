@@ -466,8 +466,7 @@ export const ProductPage = () => {
                                 Хотите такую кухню у себя дома?
                             </h2>
                             <p className="mt-5 text-lg leading-relaxed text-milk/85">
-                                Оставьте заявку — обсудим детали, покажем похожие проекты и бесплатно
-                                рассчитаем стоимость под ваши размеры.
+                                Оставьте заявку&nbsp;&mdash; обсудим детали, покажем похожие проекты и&nbsp;бесплатно рассчитаем стоимость под ваши размеры.
                             </p>
                             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                                 <Link
@@ -480,7 +479,7 @@ export const ProductPage = () => {
                                     to="/contacts"
                                     className="btn-secondary flex items-center justify-center gap-2 border-milk/40 text-milk hover:bg-milk/10"
                                 >
-                                    <Phone className="h-4 w-4" strokeWidth={1.75} /> +7 (999) 123-45-67
+                                    <Phone className="h-4 w-4" strokeWidth={1.75} /> +7 (920) 123-45-67
                                 </Link>
                             </div>
                         </div>
