@@ -1,8 +1,8 @@
 ﻿import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Package, ShoppingCart, Users, TrendingUp, ArrowLeft } from 'lucide-react';
 import { api } from '../../api/client';
 import type { PaginatedProducts, Order } from '../../types';
+import { Package, ShoppingCart, Users, TrendingUp, ArrowLeft } from 'lucide-react';
 
 export const AdminDashboard = () => {
     // ✅ Надёжный способ: получаем результат, затем извлекаем data
@@ -109,6 +109,10 @@ export const AdminDashboard = () => {
                 <Link to="/admin/support" className="card p-6 hover:shadow-md transition-shadow">
                     <h3 className="text-lg font-bold mb-2">💬 Тех. поддержка</h3>
                     <p className="text-gray-600">Обращения клиентов из Telegram-бота</p>
+                </Link>
+                <Link to="/admin/reviews" className="card p-6 hover:shadow-md transition-shadow">
+                    <h3 className="text-lg font-bold mb-2">💬 Отзывы</h3>
+                    <p className="text-gray-600">Добавление и модерация отзывов клиентов</p>
                 </Link>
             </div>
         </div>

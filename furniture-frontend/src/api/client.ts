@@ -8,8 +8,8 @@ import type {
     Category,
     Order,
     CreateOrderRequest,
-    PaginatedProducts, PortfolioWork,
-    PortfolioWorkRequest, SupportTicket, SupportStats, ProductFilters
+    PaginatedProducts, PortfolioWork, PaginatedReviews,
+    PortfolioWorkRequest, SupportTicket, SupportStats, ProductFilters, Review
 } from '../types';
 
 const API_BASE_URL = '/api';
@@ -232,6 +232,39 @@ class ApiClient {
 
     async deleteProduct(id: number): Promise<void> {
         await this.client.delete(`/products/${id}`);
+    }
+
+    // ===== REVIEWS: публично =====
+    async getReviews(): Promise<Review[]> {
+        const { data } = await this.client.get<Review[]>('/reviews');
+        return data;
+    }
+
+    // ===== REVIEWS: админ =====
+    async adminGetReviews(page = 0, size = 20): Promise<PaginatedReviews> {
+        const { data } = await this.client.get<PaginatedReviews>('/admin/reviews', {
+            params: { page, size },
+        });
+        return data;
+    }
+
+    async createReview(review: Partial<Review>): Promise<Review> {
+        const { data } = await this.client.post<Review>('/admin/reviews', review);
+        return data;
+    }
+
+    async updateReview(id: number, review: Partial<Review>): Promise<Review> {
+        const { data } = await this.client.put<Review>(`/admin/reviews/${id}`, review);
+        return data;
+    }
+
+    async toggleReview(id: number): Promise<Review> {
+        const { data } = await this.client.patch<Review>(`/admin/reviews/${id}/toggle`);
+        return data;
+    }
+
+    async deleteReview(id: number): Promise<void> {
+        await this.client.delete(`/admin/reviews/${id}`);
     }
 
 }

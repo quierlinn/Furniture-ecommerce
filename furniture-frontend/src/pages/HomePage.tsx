@@ -9,6 +9,7 @@ import { SectionHeading } from '../components/ui/SectionHeading';
 import { Reveal } from '../components/ui/Reveal';
 import { getCategoryImage, HERO_IMAGE, WORKSHOP_IMAGE } from '../utils/placeholders';
 import { cn } from '../lib/cn';
+import { ReviewsSection } from '../components/home/ReviewsSection';
 
 const STEPS = [
     { n: '01', title: 'Заявка', text: 'Вы выбираете мебель или оставляете заявку — мы связываемся и уточняем детали.' },
@@ -155,6 +156,8 @@ export const HomePage = () => {
                     </div>
                 </div>
             </section>
+
+            <ReviewsSection />
 
             {/* ===== CTA ===== */}
             <section className="bg-ink py-20 text-cream md:py-24">

@@ -166,3 +166,22 @@ export interface SupportStats {
     resolved: number;
     total: number;
 }
+
+export interface Review {
+    id: number;
+    authorName: string;
+    authorCity: string | null;
+    rating: number;
+    content: string;
+    published: boolean;
+    createdAt: string;
+}
+
+export interface PaginatedReviews {
+    content: Review[];
+    totalPages: number;
+    totalElements: number;
+    number: number;
+    first: boolean;
+    last: boolean;
+}
