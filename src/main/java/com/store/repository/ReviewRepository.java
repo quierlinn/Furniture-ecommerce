@@ -1,4 +1,4 @@
-﻿package com.store.repository;
+package com.store.repository;
 
 import com.store.entity.Review;
 import org.springframework.data.domain.Page;
