@@ -65,4 +65,12 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(status).body(Map.of("message", message));
     }
+
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(
+            org.springframework.dao.DataIntegrityViolationException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("message", "Нельзя удалить: эта запись используется в других данных. Сначала удалите связанные записи.");
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
 }

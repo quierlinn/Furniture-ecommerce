@@ -1,6 +1,7 @@
 ﻿import { ArrowRight, ShoppingBag } from 'lucide-react';
 import type { Product } from '../../types';
 import {formatPriceFrom} from "../../utils/format.ts";
+import {stripMarkdown} from "../../utils/markdown.ts";
 
 interface ProductCardProps {
     product: Product;
@@ -29,7 +30,9 @@ export const ProductCard = ({ product, onAddToCart, onViewDetails }: ProductCard
             <h3 className="font-bold tracking-tight">{product.name}</h3>
             <span className="shrink-0 font-extrabold text-walnut">{formatPriceFrom(product.price)}</span>
         </div>
-        <p className="mt-1 line-clamp-1 text-sm text-ink-soft">{product.description}</p>
+        <p className="text-sm text-gray-600 line-clamp-2">
+            {stripMarkdown(product.description).slice(0, 140)}...
+        </p>
 
         <div className="mt-3 flex items-center gap-2">
             <button

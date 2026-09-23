@@ -22,13 +22,28 @@ public class ProductController {
     public ResponseEntity<Page<ProductDto>> getAllProducts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String query,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir) {
-        
+
         Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        
-        Page<ProductDto> products = productService.getAllProducts(pageable);
+
+        Page<ProductDto> products;
+        boolean hasCategory = categoryId != null;
+        boolean hasQuery = query != null && !query.trim().isEmpty();
+
+        if (hasCategory && hasQuery) {
+            products = productService.searchProductsByCategory(categoryId, query.trim(), pageable);
+        } else if (hasCategory) {
+            products = productService.getProductsByCategory(categoryId, pageable);
+        } else if (hasQuery) {
+            products = productService.searchProducts(query.trim(), pageable);
+        } else {
+            products = productService.getAllProducts(pageable);
+        }
+
         return ResponseEntity.ok(products);
     }
 
