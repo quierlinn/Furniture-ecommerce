@@ -430,7 +430,7 @@ export const AboutPage = () => {
                             </Link>
                             <a
                                 href="tel:+79200085416"
-                                className="btn-secondary flex items-center justify-center gap-2 border-milk/40 text-milk hover:bg-milk/10"
+                                className="btn-primary flex items-center justify-center gap-2 bg-milk text-terra hover:bg-cream"
                             >
                                 <Phone className="h-4 w-4" strokeWidth={1.75} />
                                 +7 (920) 008-54-16
