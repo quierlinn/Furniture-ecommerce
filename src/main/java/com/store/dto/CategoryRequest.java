@@ -1,4 +1,4 @@
 package com.store.dto;
 
-public record CategoryRequest(String name) {
+public record CategoryRequest(String name, String imageUrl) {
 }

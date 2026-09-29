@@ -76,7 +76,7 @@ export const HomePage = () => {
                         <Reveal key={cat.id} delay={i * 0.06} className={cn(i === 0 && 'col-span-2 row-span-2')}>
                             <Link to={`/catalog?categoryId=${cat.id}`} className="group relative block h-full overflow-hidden rounded-img bg-sand">
                                 <img
-                                    src={getCategoryImage(cat.id)}
+                                    src={cat.imageUrl || getCategoryImage(cat.id)}
                                     alt={cat.name}
                                     loading="lazy"
                                     className={cn(

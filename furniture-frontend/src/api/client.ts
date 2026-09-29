@@ -108,13 +108,13 @@ class ApiClient {
         return data;
     }
     // ===== CATEGORIES (Admin) =====
-    async createCategory(name: string): Promise<Category> {
-        const { data } = await this.client.post<Category>('/categories', { name });
+    async createCategory(payload: { name: string; imageUrl?: string | null }): Promise<Category> {
+        const { data } = await this.client.post<Category>('/categories', payload);
         return data;
     }
 
-    async updateCategory(id: number, name: string): Promise<Category> {
-        const { data } = await this.client.put<Category>(`/categories/${id}`, { name });
+    async updateCategory(id: number, payload: { name: string; imageUrl?: string | null }): Promise<Category> {
+        const { data } = await this.client.put<Category>(`/categories/${id}`, payload);
         return data;
     }
 

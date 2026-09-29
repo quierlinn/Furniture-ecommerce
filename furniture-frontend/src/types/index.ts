@@ -30,6 +30,7 @@ export interface User {
 export interface Category {
     id: number;
     name: string;
+    imageUrl?: string | null;
 }
 
 export interface Product {

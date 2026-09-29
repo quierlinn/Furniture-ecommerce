@@ -1,35 +1,39 @@
 ﻿import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AlertCircle, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { AlertCircle, Pencil, Plus, Trash2, X, Image as ImageIcon } from 'lucide-react';
 import { api } from '../../api/client';
 import type { Category } from '../../types';
 import { Button } from '../../components/ui/Button';
+import { getCategoryImage } from '../../utils/placeholders';
 
 export const CategoriesAdmin = () => {
     const queryClient = useQueryClient();
     const [modalOpen, setModalOpen] = useState(false);
     const [editing, setEditing] = useState<Category | null>(null);
     const [name, setName] = useState('');
+    const [imageUrl, setImageUrl] = useState('');
     const [formError, setFormError] = useState<string | null>(null);
     const [listError, setListError] = useState<string | null>(null);
 
     const { data: categories = [], isLoading } = useQuery<Category[]>({
         queryKey: ['categories'],
         queryFn: () => api.getCategories(),
-        staleTime: 0, // в админке всегда свежие
+        staleTime: 0,
     });
 
     const invalidate = () => queryClient.invalidateQueries({ queryKey: ['categories'] });
 
     const createMutation = useMutation({
-        mutationFn: (n: string) => api.createCategory(n),
+        mutationFn: (payload: { name: string; imageUrl: string | null }) =>
+            api.createCategory(payload),
         onSuccess: () => { invalidate(); closeModal(); },
         onError: (e: any) => setFormError(e.response?.data?.message || 'Ошибка создания категории'),
     });
 
     const updateMutation = useMutation({
-        mutationFn: ({ id, n }: { id: number; n: string }) => api.updateCategory(id, n),
+        mutationFn: ({ id, payload }: { id: number; payload: { name: string; imageUrl: string | null } }) =>
+            api.updateCategory(id, payload),
         onSuccess: () => { invalidate(); closeModal(); },
         onError: (e: any) => setFormError(e.response?.data?.message || 'Ошибка обновления категории'),
     });
@@ -43,6 +47,7 @@ export const CategoriesAdmin = () => {
     const openCreate = () => {
         setEditing(null);
         setName('');
+        setImageUrl('');
         setFormError(null);
         setModalOpen(true);
     };
@@ -50,6 +55,7 @@ export const CategoriesAdmin = () => {
     const openEdit = (cat: Category) => {
         setEditing(cat);
         setName(cat.name);
+        setImageUrl(cat.imageUrl || '');
         setFormError(null);
         setModalOpen(true);
     };
@@ -58,20 +64,25 @@ export const CategoriesAdmin = () => {
         setModalOpen(false);
         setEditing(null);
         setName('');
+        setImageUrl('');
         setFormError(null);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const trimmed = name.trim();
-        if (!trimmed) {
+        const trimmedName = name.trim();
+        if (!trimmedName) {
             setFormError('Название не может быть пустым');
             return;
         }
+        const payload = {
+            name: trimmedName,
+            imageUrl: imageUrl.trim() || null,
+        };
         if (editing) {
-            updateMutation.mutate({ id: editing.id, n: trimmed });
+            updateMutation.mutate({ id: editing.id, payload });
         } else {
-            createMutation.mutate(trimmed);
+            createMutation.mutate(payload);
         }
     };
 
@@ -113,9 +124,28 @@ export const CategoriesAdmin = () => {
                     )}
                     {categories.map((cat) => (
                         <div key={cat.id} className="flex items-center justify-between gap-4 px-6 py-4">
-                            <div>
-                                <p className="font-bold">{cat.name}</p>
-                                <p className="mt-0.5 text-xs text-ink-soft">ID #{cat.id}</p>
+                            <div className="flex items-center gap-4">
+                                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-btn bg-sand">
+                                    <img
+                                        src={cat.imageUrl || getCategoryImage(cat.id)}
+                                        alt={cat.name}
+                                        className="h-full w-full object-cover"
+                                    />
+                                </div>
+                                <div>
+                                    <p className="font-bold">{cat.name}</p>
+                                    <p className="mt-0.5 text-xs text-ink-soft">
+                                        ID #{cat.id}
+                                        {cat.imageUrl ? (
+                                            <span className="ml-2 inline-flex items-center gap-1 text-success-dark">
+                                                <ImageIcon className="h-3 w-3" strokeWidth={2} />
+                                                своя картинка
+                                            </span>
+                                        ) : (
+                                            <span className="ml-2 text-ink-soft/60">стандартная картинка</span>
+                                        )}
+                                    </p>
+                                </div>
                             </div>
                             <div className="flex gap-1">
                                 <button
@@ -138,11 +168,10 @@ export const CategoriesAdmin = () => {
                 </div>
             )}
 
-            {/* Модалка создания/редактирования */}
             {modalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4" onClick={closeModal}>
                     <div
-                        className="w-full max-w-md rounded-modal bg-milk p-6 shadow-lift"
+                        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-modal bg-milk p-6 shadow-lift"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="mb-5 flex items-center justify-between">
@@ -165,6 +194,40 @@ export const CategoriesAdmin = () => {
                                     placeholder="Например: Столы и стулья"
                                     className="input-field"
                                 />
+                            </div>
+
+                            <div>
+                                <label className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-ink-soft">
+                                    <ImageIcon className="h-4 w-4" strokeWidth={1.75} />
+                                    Картинка на главной (URL)
+                                </label>
+                                <input
+                                    type="url"
+                                    value={imageUrl}
+                                    onChange={(e) => setImageUrl(e.target.value)}
+                                    placeholder="https://... или оставьте пустым"
+                                    className="input-field font-mono text-xs"
+                                />
+                                <p className="mt-1 text-xs text-ink-soft/70">
+                                    Если оставить пустым — покажется стандартная картинка категории.
+                                </p>
+
+                                {/* Превью */}
+                                <div className="mt-3 aspect-[4/3] overflow-hidden rounded-btn bg-sand">
+                                    <img
+                                        src={imageUrl.trim() || getCategoryImage(editing?.id || 0)}
+                                        alt="Превью"
+                                        className="h-full w-full object-cover"
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).style.opacity = '0.25';
+                                        }}
+                                    />
+                                </div>
+                                {!imageUrl.trim() && (
+                                    <p className="mt-1 text-xs text-ink-soft/60 italic">
+                                        Сейчас используется стандартная картинка
+                                    </p>
+                                )}
                             </div>
 
                             {formError && (

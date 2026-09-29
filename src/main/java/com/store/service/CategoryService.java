@@ -32,18 +32,19 @@ public class CategoryService {
 
     // ===== CREATE =====
     @Transactional
-    public CategoryDto createCategory(String name) {
+    public CategoryDto createCategory(String name, String imageUrl) {
         String normalized = normalize(name);
         if (categoryRepository.existsByNameIgnoreCase(normalized)) {
             throw new IllegalArgumentException("Категория с таким названием уже существует");
         }
         Category category = new Category(normalized);
+        category.setImageUrl(blankToNull(imageUrl));
         return CategoryMapper.INSTANCE.toDto(categoryRepository.save(category));
     }
 
     // ===== UPDATE =====
     @Transactional
-    public CategoryDto updateCategory(Long id, String name) {
+    public CategoryDto updateCategory(Long id, String name, String imageUrl) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Категория не найдена"));
 
@@ -54,8 +55,13 @@ public class CategoryService {
         }
 
         category.setName(normalized);
+        category.setImageUrl(blankToNull(imageUrl));
         category.setUpdatedAt(java.time.LocalDateTime.now());
         return CategoryMapper.INSTANCE.toDto(categoryRepository.save(category));
+    }
+
+    private String blankToNull(String s) {
+        return (s == null || s.isBlank()) ? null : s.trim();
     }
 
     // ===== DELETE (вариант A: запрещаем, если есть товары) =====

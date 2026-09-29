@@ -37,7 +37,7 @@ public class CategoryController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> create(@RequestBody CategoryRequest request) {
         try {
-            CategoryDto created = categoryService.createCategory(request.name());
+            CategoryDto created = categoryService.createCategory(request.name(), request.imageUrl());
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
@@ -49,7 +49,7 @@ public class CategoryController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody CategoryRequest request) {
         try {
-            return ResponseEntity.ok(categoryService.updateCategory(id, request.name()));
+            return ResponseEntity.ok(categoryService.updateCategory(id, request.name(), request.imageUrl()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
