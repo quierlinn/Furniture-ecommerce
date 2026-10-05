@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+﻿import {useEffect, useState} from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
@@ -6,8 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Plus, Edit, Trash2, ArrowLeft, Search, X } from 'lucide-react';
 import { api } from '../../api/client';
-import type { Product, PaginatedProducts, Category } from '../../types';
 import { formatPrice } from '../../utils/format';
+import type { Product, PaginatedProducts, Category, Subcategory } from '../../types';
 
 const productSchema = z.object({
     name: z.string().min(1, 'Название обязательно'),
@@ -15,6 +15,7 @@ const productSchema = z.object({
     price: z.number().min(0, 'Цена должна быть положительной'),
     imagesText: z.string().optional(),
     categoryId: z.number().min(1, 'Категория обязательна'),
+    subcategoryId: z.number().optional(),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -53,6 +54,7 @@ export const ProductsAdmin = () => {
             price: 0,
             imagesText: '',
             categoryId: 1,
+            subcategoryId: undefined,
         },
     });
 
@@ -64,6 +66,7 @@ export const ProductsAdmin = () => {
                 price: formData.price,
                 images: formData.imagesText?.split('\n').map(s => s.trim()).filter(Boolean) || [],
                 categoryId: formData.categoryId,
+                subcategoryId: formData.subcategoryId || null,
             };
             return api.createProduct(payload);
         },
@@ -82,6 +85,7 @@ export const ProductsAdmin = () => {
                 price: formData.price,
                 images: formData.imagesText?.split('\n').map(s => s.trim()).filter(Boolean) || [],
                 categoryId: formData.categoryId,
+                subcategoryId: formData.subcategoryId,
             };
             return api.updateProduct(id, payload);
         },
@@ -115,6 +119,7 @@ export const ProductsAdmin = () => {
         form.setValue('price', product.price);
         form.setValue('imagesText', product.images?.join('\n') || '');
         form.setValue('categoryId', product.categoryId || 1);
+        form.setValue('subcategoryId', product.subcategoryId ?? undefined);
         setShowModal(true);
     };
 
@@ -129,6 +134,18 @@ export const ProductsAdmin = () => {
         setEditingProduct(null);
         form.reset();
     };
+
+    const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+
+    const selectedCategoryId = form.watch('categoryId');
+
+    useEffect(() => {
+        if (selectedCategoryId) {
+            api.getSubcategoriesByCategory(selectedCategoryId).then(setSubcategories);
+        } else {
+            setSubcategories([]);
+        }
+    }, [selectedCategoryId]);
 
     const previewImages = form.watch('imagesText')?.split('\n').map(s => s.trim()).filter(Boolean) || [];
 
@@ -338,6 +355,25 @@ export const ProductsAdmin = () => {
                                 </select>
                                 {form.formState.errors.categoryId && (
                                     <p className="mt-1 text-sm text-red-600">{form.formState.errors.categoryId.message}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Подкатегория</label>
+                                <select
+                                    {...form.register('subcategoryId', { valueAsNumber: true })}
+                                    disabled={subcategories.length === 0}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary disabled:bg-gray-100"
+                                >
+                                    <option value="">— Без подкатегории —</option>
+                                    {subcategories.map((sub) => (
+                                        <option key={sub.id} value={sub.id}>{sub.name}</option>
+                                    ))}
+                                </select>
+                                {subcategories.length === 0 && selectedCategoryId && (
+                                    <p className="mt-1 text-xs text-gray-500">
+                                        У этой категории нет подкатегорий
+                                    </p>
                                 )}
                             </div>
 

@@ -102,6 +102,10 @@ export const AdminDashboard = () => {
                     <h3 className="text-lg font-bold mb-2">🏷️ Управление категориями</h3>
                     <p className="text-gray-600">Создание, переименование и удаление категорий каталога</p>
                 </Link>
+                <Link to="/admin/subcategories" className="card p-6 hover:shadow-md transition-shadow">
+                    <h3 className="text-lg font-bold mb-2">🗂️ Подкатегории</h3>
+                    <p className="text-gray-600">Подкатегории внутри основных категорий каталога</p>
+                </Link>
                 <Link to="/admin/portfolio" className="card p-6 hover:shadow-md transition-shadow">
                     <h3 className="text-lg font-bold mb-2">🖼 Портфолио</h3>
                     <p className="text-gray-600">Публикация работ и управление ими</p>
@@ -114,6 +118,7 @@ export const AdminDashboard = () => {
                     <h3 className="text-lg font-bold mb-2">💬 Отзывы</h3>
                     <p className="text-gray-600">Добавление и модерация отзывов клиентов</p>
                 </Link>
+
             </div>
         </div>
     );

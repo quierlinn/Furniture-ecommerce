@@ -44,6 +44,18 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public Page<ProductDto> getProductsBySubcategory(Long subcategoryId, Pageable pageable) {
+        return productRepository.findBySubcategoryId(subcategoryId, pageable)
+                .map(ProductMapper.INSTANCE::toDto);
+    }
+
+    @Override
+    public Page<ProductDto> getProductsByCategoryAndSubcategory(Long categoryId, Long subcategoryId, Pageable pageable) {
+        return productRepository.findByCategoryIdAndSubcategoryId(categoryId, subcategoryId, pageable)
+                .map(ProductMapper.INSTANCE::toDto);
+    }
+
+    @Override
     public Page<ProductDto> searchProducts(String query, Pageable pageable) {
         return productRepository.findByNameContainingIgnoreCase(query, pageable).map(ProductMapper.INSTANCE::toDto);
     }

@@ -11,12 +11,14 @@ public class ProductDto {
     private BigDecimal price;
     private List<String> images;
     private Long categoryId;
+    private Long subcategoryId;
+    private String subcategoryName;
     private CategoryDto category;
 
     public ProductDto() {}
 
     public ProductDto(Long id, String name, String description, BigDecimal price,
-                      List<String> images, Long categoryId, CategoryDto category) {
+                      List<String> images, Long categoryId, CategoryDto category, Long subcategoryId, String subcategoryName) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -24,6 +26,8 @@ public class ProductDto {
         this.images = images;
         this.categoryId = categoryId;
         this.category = category;
+        this.subcategoryId = subcategoryId;
+        this.subcategoryName = subcategoryName;
     }
 
     public Long getId() { return id; }
@@ -43,6 +47,10 @@ public class ProductDto {
 
     public Long getCategoryId() { return categoryId; }
     public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
+    public Long getSubcategoryId() { return subcategoryId; }
+    public void setSubcategoryId(Long subcategoryId) { this.subcategoryId = subcategoryId; }
+    public String getSubcategoryName() { return subcategoryName; }
+    public void setSubcategoryName(String subcategoryName) { this.subcategoryName = subcategoryName; }
 
     public CategoryDto getCategory() { return category; }
     public void setCategory(CategoryDto category) { this.category = category; }

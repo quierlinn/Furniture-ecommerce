@@ -23,6 +23,7 @@ import { PortfolioWorkPage } from './pages/PortfolioWorkPage';
 import { PortfolioAdmin } from './pages/admin/PortfolioAdmin';
 import { SupportAdmin } from './pages/admin/SupportAdmin';
 import { ReviewsAdmin } from './pages/admin/ReviewsAdmin';
+import { SubcategoriesAdmin } from './pages/admin/SubcategoriesAdmin';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -92,6 +93,7 @@ function AppRoutes() {
                         <AdminRoute><SupportAdmin /></AdminRoute>
                     }/>
                     <Route path="/admin/reviews" element={<ReviewsAdmin />} />
+                    <Route path="/admin/subcategories" element={<SubcategoriesAdmin />} />
 
 
                     <Route path="*" element={<div className="text-center py-20">🔍 Страница не найдена</div>}/>

@@ -22,4 +22,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             @Param("categoryId") Long categoryId,
             @Param("query") String query,
             Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.subcategory.id = :subcategoryId")
+    Page<Product> findBySubcategoryId(@Param("subcategoryId") Long subcategoryId, Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.category.id = :categoryId AND p.subcategory.id = :subcategoryId")
+    Page<Product> findByCategoryIdAndSubcategoryId(
+            @Param("categoryId") Long categoryId,
+            @Param("subcategoryId") Long subcategoryId,
+            Pageable pageable);
 }

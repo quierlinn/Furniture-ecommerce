@@ -41,6 +41,14 @@ export interface Product {
     images: string[];
     categoryId: number;
     category: { id: number; name: string };
+    subcategoryId?: number | null;
+    subcategoryName?: string | null;
+}
+export interface Subcategory {
+    id: number;
+    name: string;
+    categoryId: number;
+    categoryName: string;
 }
 
 export interface PaginatedProducts {
@@ -60,6 +68,7 @@ export interface ProductFilters {
     query?: string;
     sortBy?: string;
     sortDir?: 'asc' | 'desc';
+    subcategoryId?: number;
 }
 
 // ===== CART =====

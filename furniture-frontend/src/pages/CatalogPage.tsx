@@ -5,14 +5,17 @@ import { ChevronLeft, ChevronRight, SlidersHorizontal, Search, X } from 'lucide-
 import { ProductCard } from '../components/catalog/ProductCard';
 import { useCart } from '../hooks/useCart';
 import { api } from '../api/client';
-import type { Product, PaginatedProducts, Category } from '../types';
+import type { Product, PaginatedProducts, Category, Subcategory } from '../types';
 
 export const CatalogPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const { addToCart } = useCart();
     const navigate = useNavigate();
 
+    // ===== все useState в одном месте =====
     const [selectedCategory, setSelectedCategory] = useState<string>(searchParams.get('categoryId') || '');
+    const [selectedSubcategory, setSelectedSubcategory] = useState<string>(searchParams.get('subcategoryId') || '');
+    const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
     const [searchQuery, setSearchQuery] = useState<string>(searchParams.get('query') || '');
     const [sortBy, setSortBy] = useState<string>(searchParams.get('sortBy') || 'id');
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>(searchParams.get('sortDir') as 'asc' | 'desc' || 'asc');
@@ -21,7 +24,6 @@ export const CatalogPage = () => {
 
     const pageSize = 20;
 
-    // ✅ ИСПРАВЛЕНО: правильная деструктуризация - data: variableName
     const { data: categories = [], isLoading: categoriesLoading } = useQuery<Category[]>({
         queryKey: ['categories'],
         queryFn: () => api.getCategories(),
@@ -29,11 +31,12 @@ export const CatalogPage = () => {
     });
 
     const { data: productsData, isLoading, isError, refetch } = useQuery<PaginatedProducts>({
-        queryKey: ['products', currentPage, selectedCategory, searchQuery, sortBy, sortDir],
+        queryKey: ['products', currentPage, selectedCategory, selectedSubcategory, searchQuery, sortBy, sortDir],
         queryFn: () => api.getProducts({
             page: currentPage,
             size: pageSize,
             categoryId: selectedCategory ? Number(selectedCategory) : undefined,
+            subcategoryId: selectedSubcategory ? Number(selectedSubcategory) : undefined,
             query: searchQuery || undefined,
             sortBy: sortBy as any,
             sortDir,
@@ -41,18 +44,45 @@ export const CatalogPage = () => {
         staleTime: 2 * 60 * 1000,
     });
 
+    // ===== Подгрузка подкатегорий при смене категории =====
+    useEffect(() => {
+        if (selectedCategory) {
+            api.getSubcategoriesByCategory(Number(selectedCategory)).then((subs) => {
+                setSubcategories(subs);
+                // если текущая подкатегория не принадлежит этой категории — сбрасываем
+                setSelectedSubcategory((prev) => {
+                    if (prev && !subs.some((s) => String(s.id) === prev)) {
+                        return '';
+                    }
+                    return prev;
+                });
+            });
+        } else {
+            setSubcategories([]);
+            setSelectedSubcategory('');
+        }
+    }, [selectedCategory]);
+
+    // ===== Синхронизация с URL =====
     useEffect(() => {
         const params = new URLSearchParams();
         if (selectedCategory) params.set('categoryId', selectedCategory);
+        if (selectedSubcategory) params.set('subcategoryId', selectedSubcategory);
         if (searchQuery) params.set('query', searchQuery);
         if (sortBy) params.set('sortBy', sortBy);
         if (sortDir) params.set('sortDir', sortDir);
         if (currentPage > 0) params.set('page', String(currentPage));
         setSearchParams(params);
-    }, [selectedCategory, searchQuery, sortBy, sortDir, currentPage, setSearchParams]);
+    }, [selectedCategory, selectedSubcategory, searchQuery, sortBy, sortDir, currentPage, setSearchParams]);
 
     const handleCategoryChange = (categoryId: string) => {
         setSelectedCategory(categoryId);
+        setSelectedSubcategory(''); // сбрасываем подкатегорию при смене категории
+        setCurrentPage(0);
+    };
+
+    const handleSubcategoryChange = (subcategoryId: string) => {
+        setSelectedSubcategory(subcategoryId);
         setCurrentPage(0);
     };
 
@@ -76,11 +106,18 @@ export const CatalogPage = () => {
         navigate(`/product/${productId}`);
     };
 
+    const resetAll = () => {
+        setSelectedCategory('');
+        setSelectedSubcategory('');
+        setSearchQuery('');
+        setCurrentPage(0);
+    };
+
     if (isError) {
         return (
             <div className="text-center py-20">
                 <h2 className="text-2xl font-bold text-red-600 mb-4">❌ Ошибка загрузки товаров</h2>
-                <p className="text-gray-600 mb-6">Проверьте, запущен ли бэкенд на http://localhost:8080</p>
+                <p className="text-gray-600 mb-6">Проверьте, запущен ли бэкенд</p>
                 <button onClick={() => refetch()} className="btn-primary">
                     Попробовать снова
                 </button>
@@ -120,6 +157,7 @@ export const CatalogPage = () => {
                 </button>
 
                 <div className={`w-full md:w-auto ${filtersOpen ? 'block' : 'hidden md:block'}`}>
+                    {/* ===== КАТЕГОРИИ ===== */}
                     <div className="flex flex-wrap gap-2">
                         <button
                             onClick={() => handleCategoryChange('')}
@@ -145,6 +183,36 @@ export const CatalogPage = () => {
                             </button>
                         ))}
                     </div>
+
+                    {/* ===== ПОДКАТЕГОРИИ (появляются, если есть) ===== */}
+                    {subcategories.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-2 pl-2 md:pl-4 md:border-l md:border-gray-300">
+                            <span className="self-center text-sm text-gray-600">Подкатегории:</span>
+                            <button
+                                onClick={() => handleSubcategoryChange('')}
+                                className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                                    !selectedSubcategory
+                                        ? 'bg-primary/10 text-primary border-primary/30'
+                                        : 'hover:bg-gray-50 border-gray-300 text-gray-600'
+                                }`}
+                            >
+                                Все
+                            </button>
+                            {subcategories.map((sub) => (
+                                <button
+                                    key={sub.id}
+                                    onClick={() => handleSubcategoryChange(String(sub.id))}
+                                    className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                                        selectedSubcategory === String(sub.id)
+                                            ? 'bg-primary/10 text-primary border-primary/30'
+                                            : 'hover:bg-gray-50 border-gray-300 text-gray-600'
+                                    }`}
+                                >
+                                    {sub.name}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-2 ml-auto">
@@ -168,27 +236,36 @@ export const CatalogPage = () => {
                 </div>
             </div>
 
-            {(selectedCategory || searchQuery) && (
+            {/* ===== АКТИВНЫЕ ФИЛЬТРЫ ===== */}
+            {(selectedCategory || selectedSubcategory || searchQuery) && (
                 <div className="flex flex-wrap items-center gap-2">
                     <span className="text-sm text-gray-600">Фильтры:</span>
                     {selectedCategory && (
                         <span className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
-              {categories.find((c: Category) => String(c.id) === selectedCategory)?.name || 'Категория'}
+                            {categories.find((c: Category) => String(c.id) === selectedCategory)?.name || 'Категория'}
                             <button onClick={() => handleCategoryChange('')} className="hover:text-red-500">
-                <X className="w-3 h-3" />
-              </button>
-            </span>
+                                <X className="w-3 h-3" />
+                            </button>
+                        </span>
+                    )}
+                    {selectedSubcategory && (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
+                            {subcategories.find((s) => String(s.id) === selectedSubcategory)?.name || 'Подкатегория'}
+                            <button onClick={() => handleSubcategoryChange('')} className="hover:text-red-500">
+                                <X className="w-3 h-3" />
+                            </button>
+                        </span>
                     )}
                     {searchQuery && (
                         <span className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
-              Поиск: "{searchQuery}"
-              <button onClick={() => { setSearchQuery(''); setCurrentPage(0); }} className="hover:text-red-500">
-                <X className="w-3 h-3" />
-              </button>
-            </span>
+                            Поиск: "{searchQuery}"
+                            <button onClick={() => { setSearchQuery(''); setCurrentPage(0); }} className="hover:text-red-500">
+                                <X className="w-3 h-3" />
+                            </button>
+                        </span>
                     )}
                     <button
-                        onClick={() => { setSelectedCategory(''); setSearchQuery(''); setCurrentPage(0); }}
+                        onClick={resetAll}
                         className="text-sm text-gray-500 hover:text-gray-700 underline"
                     >
                         Сбросить всё
@@ -213,10 +290,7 @@ export const CatalogPage = () => {
             ) : !productsData || productsData.content.length === 0 ? (
                 <div className="text-center py-20">
                     <p className="text-xl text-gray-600 mb-4">🔍 Товары не найдены</p>
-                    <button
-                        onClick={() => { setSelectedCategory(''); setSearchQuery(''); }}
-                        className="btn-primary"
-                    >
+                    <button onClick={resetAll} className="btn-primary">
                         Сбросить фильтры
                     </button>
                 </div>

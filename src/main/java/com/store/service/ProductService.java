@@ -1,5 +1,3 @@
-// src/main/java/com/store/service/ProductService.java
-
 package com.store.service;
 
 import com.store.dto.ProductDto;
@@ -14,7 +12,8 @@ public interface ProductService {
     Page<ProductDto> getProductsByCategory(Long categoryId, Pageable pageable);
     Page<ProductDto> searchProducts(String query, Pageable pageable);
     Page<ProductDto> searchProductsByCategory(Long categoryId, String query, Pageable pageable);
-
+    Page<ProductDto> getProductsBySubcategory(Long subcategoryId, Pageable pageable);
+    Page<ProductDto> getProductsByCategoryAndSubcategory(Long categoryId, Long subcategoryId, Pageable pageable);
     ProductDto createProduct(ProductDto productDto);
     ProductDto updateProduct(Long id, ProductDto productDto);
     void deleteProduct(Long id);

@@ -9,7 +9,7 @@ import type {
     Order,
     CreateOrderRequest,
     PaginatedProducts, PortfolioWork, PaginatedReviews,
-    PortfolioWorkRequest, SupportTicket, SupportStats, ProductFilters, Review
+    PortfolioWorkRequest, SupportTicket, SupportStats, ProductFilters, Review, Subcategory
 } from '../types';
 
 const API_BASE_URL = '/api';
@@ -89,6 +89,7 @@ class ApiClient {
                 page: filters.page,
                 size: filters.size,
                 categoryId: filters.categoryId,
+                subcategoryId: filters.subcategoryId,
                 query: filters.query,
                 sortBy: filters.sortBy,
                 sortDir: filters.sortDir,
@@ -265,6 +266,36 @@ class ApiClient {
 
     async deleteReview(id: number): Promise<void> {
         await this.client.delete(`/admin/reviews/${id}`);
+    }
+
+    // ===== SUBCATEGORIES =====
+    async getSubcategories(): Promise<Subcategory[]> {
+        const { data } = await this.client.get<Subcategory[]>('/subcategories');
+        return data;
+    }
+
+    async getSubcategoriesByCategory(categoryId: number): Promise<Subcategory[]> {
+        const { data } = await this.client.get<Subcategory[]>(`/subcategories/category/${categoryId}`);
+        return data;
+    }
+
+    // ===== SUBCATEGORIES (Admin) =====
+    async createSubcategory(payload: { categoryId: number; name: string }): Promise<Subcategory> {
+        const { data } = await this.client.post<Subcategory>('/admin/subcategories', null, {
+            params: payload,
+        });
+        return data;
+    }
+
+    async updateSubcategory(id: number, payload: { categoryId: number; name: string }): Promise<Subcategory> {
+        const { data } = await this.client.put<Subcategory>(`/admin/subcategories/${id}`, null, {
+            params: payload,
+        });
+        return data;
+    }
+
+    async deleteSubcategory(id: number): Promise<void> {
+        await this.client.delete(`/admin/subcategories/${id}`);
     }
 
 }

@@ -34,6 +34,10 @@ public class Product {
     @JoinColumn(name = "category_id")
     private Category category;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subcategory_id")
+    private Subcategory subcategory;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -54,6 +58,8 @@ public class Product {
     public void setImages(List<String> images) { this.images = images != null ? images : new ArrayList<>(); }
     public Category getCategory() { return category; }
     public void setCategory(Category category) { this.category = category; }
+    public Subcategory getSubcategory() { return subcategory; }
+    public void setSubcategory(Subcategory subcategory) { this.subcategory = subcategory; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }

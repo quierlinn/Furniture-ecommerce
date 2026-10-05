@@ -23,6 +23,7 @@ public class ProductController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Long subcategoryId,   // ← добавлено
             @RequestParam(required = false) String query,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir) {
@@ -30,12 +31,19 @@ public class ProductController {
         Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<ProductDto> products;
         boolean hasCategory = categoryId != null;
+        boolean hasSubcategory = subcategoryId != null;
         boolean hasQuery = query != null && !query.trim().isEmpty();
 
-        if (hasCategory && hasQuery) {
+        Page<ProductDto> products;
+        if (hasCategory && hasSubcategory && hasQuery) {
             products = productService.searchProductsByCategory(categoryId, query.trim(), pageable);
+        } else if (hasCategory && hasSubcategory) {
+            products = productService.getProductsByCategoryAndSubcategory(categoryId, subcategoryId, pageable);
+        } else if (hasCategory && hasQuery) {
+            products = productService.searchProductsByCategory(categoryId, query.trim(), pageable);
+        } else if (hasSubcategory) {
+            products = productService.getProductsBySubcategory(subcategoryId, pageable);
         } else if (hasCategory) {
             products = productService.getProductsByCategory(categoryId, pageable);
         } else if (hasQuery) {
@@ -61,10 +69,10 @@ public class ProductController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir) {
-        
+
         Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        
+
         Page<ProductDto> products = productService.getProductsByCategory(categoryId, pageable);
         return ResponseEntity.ok(products);
     }
@@ -92,10 +100,10 @@ public class ProductController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir) {
-        
+
         Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        
+
         Page<ProductDto> products = productService.searchProductsByCategory(categoryId, q, pageable);
         return ResponseEntity.ok(products);
     }
