@@ -1,4 +1,4 @@
-# Furniture Store – AI Friendly Project
+# Furniture Store
 
 ## Project Overview
 
