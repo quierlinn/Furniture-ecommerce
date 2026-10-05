@@ -63,11 +63,13 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // ✅ КОНКРЕТНЫЕ PATTERNS вместо "*"
+        // ✅ ДОБАВЛЕНЫ адреса твоего сервера и домена
         config.setAllowedOriginPatterns(Arrays.asList(
                 "http://localhost:*",
                 "http://127.0.0.1:*",
-                "null"  // Для Postman и file://
+                "http://185.65.202.22:*",   // <-- ДОБАВИТЬ
+                "https://mebelriff.ru",      // <-- ДОБАВИТЬ
+                "null"
         ));
 
         config.setAllowedMethods(Arrays.asList(
