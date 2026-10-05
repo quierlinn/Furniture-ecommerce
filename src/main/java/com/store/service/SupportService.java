@@ -16,9 +16,11 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class SupportService {
 
-    @Autowired private SupportTicketRepository ticketRepo;
-    @Autowired private SupportMessageRepository messageRepo;
-    @Autowired private TelegramNotifier notifier;
+    @Autowired
+    private SupportTicketRepository ticketRepo;
+
+    @Autowired
+    private SupportMessageRepository messageRepo;
 
     public List<TicketDto> getAllTickets() {
         return ticketRepo.findAllByOrderByUpdatedAtDesc().stream().map(this::toDto).toList();
@@ -58,10 +60,7 @@ public class SupportService {
         t.setUpdatedAt(LocalDateTime.now());
         ticketRepo.save(t);
 
-        String greeting = t.getTelegramName() != null ? t.getTelegramName() + ", " : "";
-        notifier.sendToUser(t.getTelegramChatId(),
-                greeting + "ответ от поддержки Riff:\n\n" + text.trim());
-
+        // Отправка в Telegram убрана
         return toDto(t);
     }
 
@@ -74,10 +73,7 @@ public class SupportService {
         t.setUpdatedAt(LocalDateTime.now());
         ticketRepo.save(t);
 
-        String greeting = t.getTelegramName() != null ? t.getTelegramName() + ", " : "";
-        notifier.sendToUser(t.getTelegramChatId(),
-                greeting + "ваш вопрос отмечен как решённый ✅\n" +
-                        "Если что-то ещё понадобится — просто напишите сюда.");
+        // Отправка в Telegram убрана
         return toDto(t);
     }
 
@@ -98,7 +94,6 @@ public class SupportService {
 
         String last = msgs.isEmpty() ? null : msgs.get(msgs.size() - 1).text();
 
-        // "непрочитанных" для админа — количество USER-сообщений после последнего ADMIN
         int unread = 0;
         for (int i = msgs.size() - 1; i >= 0; i--) {
             if (msgs.get(i).sender() == SupportMessage.Sender.ADMIN) break;
