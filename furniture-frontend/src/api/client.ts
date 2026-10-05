@@ -297,6 +297,10 @@ class ApiClient {
     async deleteSubcategory(id: number): Promise<void> {
         await this.client.delete(`/admin/subcategories/${id}`);
     }
+    async sendSupportMessage(name: string, message: string) {
+        const { data } = await this.client.post('/support/public', { name, message });
+        return data;
+    }
 
 }
 

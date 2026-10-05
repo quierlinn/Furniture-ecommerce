@@ -24,6 +24,7 @@ import { PortfolioAdmin } from './pages/admin/PortfolioAdmin';
 import { SupportAdmin } from './pages/admin/SupportAdmin';
 import { ReviewsAdmin } from './pages/admin/ReviewsAdmin';
 import { SubcategoriesAdmin } from './pages/admin/SubcategoriesAdmin';
+import {ChatWidget} from "./components/chat/ChatWidget.tsx";
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -113,6 +114,7 @@ export default function App() {
                     <BrowserRouter>
                         <AppRoutes/>
                     </BrowserRouter>
+                    <ChatWidget/>
                 </CartProvider>
             </AuthProvider>
         </QueryClientProvider>

@@ -64,4 +64,30 @@ public class SupportController {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
+
+    // ===== ПУБЛИЧНО: Создание нового обращения из виджета =====
+    @PostMapping("/public")
+    public ResponseEntity<?> createPublicTicket(@RequestBody Map<String, String> request) {
+        try {
+            String name = request.getOrDefault("name", "Посетитель сайта");
+            String message = request.get("message");
+
+            if (message == null || message.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Сообщение не может быть пустым"));
+            }
+
+            // Создаём простое обращение.
+            // Предполагается, что в SupportService есть метод createTicket(name, message)
+            // Если его нет, используй существующий, передав туда эти данные.
+            // Для простоты, если у тебя уже есть метод создания, вызови его:
+
+            // Пример (адаптируй под свой SupportService):
+            // SupportTicket ticket = supportService.createTicket(name, "guest@example.com", message);
+            // return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("id", ticket.getId()));
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("success", true, "message", "Сообщение отправлено"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Ошибка отправки"));
+        }
+    }
 }

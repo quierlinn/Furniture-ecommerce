@@ -50,6 +50,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/reviews").permitAll()
                         .requestMatchers("/api/subcategories/**").permitAll()
+                        .requestMatchers("/api/support/public").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
