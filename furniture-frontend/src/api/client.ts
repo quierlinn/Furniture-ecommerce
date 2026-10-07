@@ -287,6 +287,21 @@ class ApiClient {
         return data;
     }
 
+    // ===== SUPPORT (Public) =====
+    async sendPublicSupportMessage(payload: {
+        message: string;
+        name?: string;
+        ticketId?: number | null
+    }) {
+        const { data } = await this.client.post('/support/public', payload);
+        return data; // Вернёт { success: true, ticketId: 123, message: "..." }
+    }
+
+    async getPublicTicket(ticketId: number) {
+        const { data } = await this.client.get(`/support/public/${ticketId}`);
+        return data; // Вернёт объект TicketDto с массивом messages
+    }
+
     async updateSubcategory(id: number, payload: { categoryId: number; name: string }): Promise<Subcategory> {
         const { data } = await this.client.put<Subcategory>(`/admin/subcategories/${id}`, null, {
             params: payload,

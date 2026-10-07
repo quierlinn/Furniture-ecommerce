@@ -1,6 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X, Send, User } from 'lucide-react';
+import { MessageCircle, X, Send, User, Loader2 } from 'lucide-react';
 import { api } from '../../api/client';
+
+// Тип для сообщения (должен совпадать с MessageDto на бэке)
+interface ChatMessage {
+    id: number;
+    sender: 'USER' | 'ADMIN' | 'SYSTEM';
+    text: string;
+    createdAt: string;
+}
 
 export const ChatWidget = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -8,23 +16,50 @@ export const ChatWidget = () => {
     const [userName, setUserName] = useState('');
     const [message, setMessage] = useState('');
     const [isSending, setIsSending] = useState(false);
-    const [isSent, setIsSent] = useState(false);
+    const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
+    // Состояние для тикета и сообщений
+    const [ticketId, setTicketId] = useState<number | null>(null);
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
+
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    // Проверяем, есть ли сохранённое имя
+    // 1. При монтировании проверяем, есть ли сохранённый тикет
     useEffect(() => {
+        const savedTicketId = localStorage.getItem('support_ticket_id');
         const savedName = localStorage.getItem('chat_user_name');
-        if (savedName) {
-            setUserName(savedName);
+
+        if (savedName) setUserName(savedName);
+
+        if (savedTicketId) {
+            setTicketId(Number(savedTicketId));
+            loadTicketHistory(Number(savedTicketId));
+        } else if (savedName) {
             setStep('chat');
         }
     }, []);
 
-    // Прокрутка вниз при новых сообщениях
+    // 2. Функция загрузки истории
+    const loadTicketHistory = async (id: number) => {
+        setIsLoadingHistory(true);
+        try {
+            const ticket = await api.getPublicTicket(id);
+            setMessages(ticket.messages || []);
+            setStep('chat');
+        } catch (error) {
+            console.error('Не удалось загрузить историю:', error);
+            // Если тикет удалён или не найден, сбрасываем ID
+            localStorage.removeItem('support_ticket_id');
+            setTicketId(null);
+        } finally {
+            setIsLoadingHistory(false);
+        }
+    };
+
+    // 3. Автопрокрутка вниз при новых сообщениях
     useEffect(() => {
-        // ИСПРАВЛЕНО: убран лишний пробел в 'smooth'
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [isSent]);
+    }, [messages, isOpen]);
 
     const handleNameSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -38,36 +73,55 @@ export const ChatWidget = () => {
         e.preventDefault();
         if (!message.trim() || isSending) return;
 
+        const currentMessage = message.trim();
+        setMessage(''); // Очищаем поле сразу для лучшего UX
         setIsSending(true);
+
+        // Оптимистичное добавление сообщения в UI
+        const tempMsg: ChatMessage = {
+            id: Date.now(),
+            sender: 'USER',
+            text: currentMessage,
+            createdAt: new Date().toISOString(),
+        };
+        setMessages(prev => [...prev, tempMsg]);
+
         try {
-            // ИСПРАВЛЕНО: используем публичный метод api.sendSupportMessage
-            await api.sendSupportMessage(userName, message.trim());
+            const response = await api.sendPublicSupportMessage({
+                message: currentMessage,
+                name: userName || 'Посетитель',
+                ticketId: ticketId,
+            });
 
-            setMessage('');
-            setIsSent(true);
-
-            // Сбрасываем статус "отправлено" через 3 секунды
-            setTimeout(() => setIsSent(false), 3000);
+            if (response.ticketId && !ticketId) {
+                // Сохраняем ID только при создании самого первого тикета
+                setTicketId(response.ticketId);
+                localStorage.setItem('support_ticket_id', String(response.ticketId));
+            }
         } catch (error) {
             console.error('Ошибка отправки:', error);
             alert('Не удалось отправить сообщение. Попробуйте позже.');
+            // Убираем временное сообщение при ошибке
+            setMessages(prev => prev.filter(m => m.id !== tempMsg.id));
+            setMessage(currentMessage); // Возвращаем текст в поле
         } finally {
             setIsSending(false);
         }
     };
 
     const resetChat = () => {
+        localStorage.removeItem('support_ticket_id');
         localStorage.removeItem('chat_user_name');
         setUserName('');
         setMessage('');
+        setMessages([]);
+        setTicketId(null);
         setStep('name');
-        setIsSent(false);
         setIsOpen(false);
     };
 
     return (
         <>
-            {/* Кнопка открытия (плавающая) */}
             {!isOpen && (
                 <button
                     onClick={() => setIsOpen(true)}
@@ -78,21 +132,22 @@ export const ChatWidget = () => {
                 </button>
             )}
 
-            {/* Окно чата */}
             {isOpen && (
                 <div className="fixed bottom-6 right-6 z-50 flex h-[500px] w-[360px] flex-col overflow-hidden rounded-2xl border border-ink/10 bg-milk shadow-2xl md:w-[400px]">
                     {/* Шапка */}
                     <div className="flex items-center justify-between bg-terra px-5 py-4 text-milk">
                         <div>
                             <h3 className="font-bold tracking-tight">Поддержка Riff</h3>
-                            <p className="text-xs text-milk/80">Обычно отвечаем в течение часа</p>
+                            <p className="text-xs text-milk/80">
+                                {isLoadingHistory ? 'Загрузка...' : 'Обычно отвечаем в течение часа'}
+                            </p>
                         </div>
                         <div className="flex gap-2">
                             {step === 'chat' && (
                                 <button
                                     onClick={resetChat}
                                     className="rounded p-1 text-milk/70 hover:bg-milk/20 hover:text-milk"
-                                    title="Начать заново"
+                                    title="Начать новый диалог"
                                 >
                                     <User className="h-4 w-4" />
                                 </button>
@@ -130,27 +185,49 @@ export const ChatWidget = () => {
                                     Начать чат
                                 </button>
                             </form>
+                        ) : isLoadingHistory ? (
+                            <div className="flex h-full items-center justify-center">
+                                <Loader2 className="h-8 w-8 animate-spin text-terra" />
+                            </div>
                         ) : (
                             <div className="flex h-full flex-col">
-                                {/* Приветственное сообщение */}
-                                <div className="mb-4 flex justify-start">
-                                    <div className="max-w-[85%] rounded-2xl rounded-tl-none bg-milk px-4 py-3 text-sm text-ink shadow-sm">
-                                        Здравствуйте, {userName}! 👋<br />
-                                        Опишите ваш вопрос или задачу, и мы обязательно ответим.
-                                    </div>
-                                </div>
-
-                                {/* Сообщение об успешной отправке */}
-                                {isSent && (
-                                    <div className="mb-4 flex justify-end">
-                                        <div className="max-w-[85%] rounded-2xl rounded-tr-none bg-success/20 px-4 py-3 text-sm text-success-dark shadow-sm">
-                                            ✅ Сообщение отправлено! Мы скоро свяжемся с вами.
+                                {/* Приветственное сообщение (если история пуста) */}
+                                {messages.length === 0 && (
+                                    <div className="mb-4 flex justify-start">
+                                        <div className="max-w-[85%] rounded-2xl rounded-tl-none bg-milk px-4 py-3 text-sm text-ink shadow-sm">
+                                            Здравствуйте, {userName || 'друг'}! 👋<br />
+                                            Опишите ваш вопрос, и мы обязательно ответим.
                                         </div>
                                     </div>
                                 )}
 
-                                {/* Поле ввода (всегда внизу) */}
-                                <div className="mt-auto">
+                                {/* Список сообщений */}
+                                <div className="flex flex-col gap-3">
+                                    {messages.map((msg) => {
+                                        const isUser = msg.sender === 'USER';
+                                        return (
+                                            <div key={msg.id} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+                                                <div
+                                                    className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
+                                                        isUser
+                                                            ? 'rounded-tr-none bg-terra text-milk'
+                                                            : 'rounded-tl-none bg-milk text-ink'
+                                                    }`}
+                                                >
+                                                    <p className="whitespace-pre-wrap">{msg.text}</p>
+                                                    <p className={`mt-1 text-[10px] ${isUser ? 'text-milk/70' : 'text-ink-soft'}`}>
+                                                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        {!isUser && <span className="ml-1 font-semibold">Поддержка</span>}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                <div ref={messagesEndRef} />
+
+                                {/* Поле ввода */}
+                                <div className="mt-4">
                                     <form onSubmit={handleMessageSubmit} className="flex gap-2">
                                         <input
                                             autoFocus
@@ -167,19 +244,15 @@ export const ChatWidget = () => {
                                             className="flex h-12 w-12 items-center justify-center rounded-lg bg-terra text-milk transition-colors hover:bg-terra-dark disabled:opacity-50"
                                         >
                                             {isSending ? (
-                                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-milk border-t-transparent" />
+                                                <Loader2 className="h-5 w-5 animate-spin" />
                                             ) : (
                                                 <Send className="h-5 w-5" strokeWidth={2} />
                                             )}
                                         </button>
                                     </form>
-                                    <p className="mt-2 text-center text-[10px] text-ink-soft/60">
-                                        Нажимая «Отправить», вы соглашаетесь на обработку персональных данных
-                                    </p>
                                 </div>
                             </div>
                         )}
-                        <div ref={messagesEndRef} />
                     </div>
                 </div>
             )}
