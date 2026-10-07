@@ -1,5 +1,3 @@
-// src/main/java/com/store/service/impl/ProductServiceImpl.java
-
 package com.store.service.impl;
 
 import com.store.dto.ProductDto;
@@ -14,6 +12,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.store.entity.Subcategory;
+import com.store.repository.SubcategoryRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,6 +27,7 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final SubcategoryRepository subcategoryRepository;
 
     @Override
     public Page<ProductDto> getAllProducts(Pageable pageable) {
@@ -73,8 +74,15 @@ public class ProductServiceImpl implements ProductService {
 
         if (productDto.getCategoryId() != null) {
             Category category = categoryRepository.findById(productDto.getCategoryId())
-                    .orElseThrow(() -> new RuntimeException("Category not found: " + productDto.getCategoryId()));
+                    .orElseThrow(() -> new RuntimeException("Категория не найдена: " + productDto.getCategoryId()));
             product.setCategory(category);
+        }
+
+        // <-- ДОБАВИТЬ ЭТОТ БЛОК для подкатегории при создании
+        if (productDto.getSubcategoryId() != null) {
+            Subcategory subcategory = subcategoryRepository.findById(productDto.getSubcategoryId())
+                    .orElseThrow(() -> new RuntimeException("Подкатегория не найдена: " + productDto.getSubcategoryId()));
+            product.setSubcategory(subcategory);
         }
 
         product.setCreatedAt(LocalDateTime.now());
@@ -88,7 +96,7 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public ProductDto updateProduct(Long id, ProductDto productDto) {
         Product existing = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found: " + id));
+                .orElseThrow(() -> new RuntimeException("Товар не найден: " + id));
 
         existing.setName(productDto.getName());
         existing.setDescription(productDto.getDescription());
@@ -97,8 +105,17 @@ public class ProductServiceImpl implements ProductService {
 
         if (productDto.getCategoryId() != null) {
             Category category = categoryRepository.findById(productDto.getCategoryId())
-                    .orElseThrow(() -> new RuntimeException("Category not found: " + productDto.getCategoryId()));
+                    .orElseThrow(() -> new RuntimeException("Категория не найдена: " + productDto.getCategoryId()));
             existing.setCategory(category);
+        }
+
+        // <-- ДОБАВИТЬ ЭТОТ БЛОК для обновления подкатегории
+        if (productDto.getSubcategoryId() != null) {
+            Subcategory subcategory = subcategoryRepository.findById(productDto.getSubcategoryId())
+                    .orElseThrow(() -> new RuntimeException("Подкатегория не найдена: " + productDto.getSubcategoryId()));
+            existing.setSubcategory(subcategory);
+        } else {
+            existing.setSubcategory(null); // Позволяем убрать подкатегорию, если выбрано "Без подкатегории"
         }
 
         existing.setUpdatedAt(LocalDateTime.now());

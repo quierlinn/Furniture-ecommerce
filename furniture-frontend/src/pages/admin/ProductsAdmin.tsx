@@ -1,4 +1,4 @@
-﻿import {useEffect, useState} from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
@@ -26,6 +26,7 @@ export const ProductsAdmin = () => {
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
+    const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
 
     const productsQuery = useQuery<PaginatedProducts>({
         queryKey: ['products', 'admin', currentPage, searchQuery],
@@ -58,6 +59,27 @@ export const ProductsAdmin = () => {
         },
     });
 
+    const selectedCategoryId = form.watch('categoryId');
+
+    // 1. Загружаем подкатегории при смене категории
+    useEffect(() => {
+        if (selectedCategoryId) {
+            api.getSubcategoriesByCategory(selectedCategoryId)
+                .then((subs) => setSubcategories(subs))
+                .catch(() => setSubcategories([]));
+        } else {
+            setSubcategories([]);
+        }
+    }, [selectedCategoryId]);
+
+    // 2. Сбрасываем подкатегорию, если она не принадлежит выбранной категории
+    useEffect(() => {
+        const currentSubId = form.getValues('subcategoryId');
+        if (currentSubId && subcategories.length > 0 && !subcategories.some(s => s.id === currentSubId)) {
+            form.setValue('subcategoryId', undefined);
+        }
+    }, [selectedCategoryId, subcategories, form]);
+
     const createMutation = useMutation({
         mutationFn: (formData: ProductFormData) => {
             const payload = {
@@ -85,7 +107,7 @@ export const ProductsAdmin = () => {
                 price: formData.price,
                 images: formData.imagesText?.split('\n').map(s => s.trim()).filter(Boolean) || [],
                 categoryId: formData.categoryId,
-                subcategoryId: formData.subcategoryId,
+                subcategoryId: formData.subcategoryId || null,
             };
             return api.updateProduct(id, payload);
         },
@@ -134,18 +156,6 @@ export const ProductsAdmin = () => {
         setEditingProduct(null);
         form.reset();
     };
-
-    const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
-
-    const selectedCategoryId = form.watch('categoryId');
-
-    useEffect(() => {
-        if (selectedCategoryId) {
-            api.getSubcategoriesByCategory(selectedCategoryId).then(setSubcategories);
-        } else {
-            setSubcategories([]);
-        }
-    }, [selectedCategoryId]);
 
     const previewImages = form.watch('imagesText')?.split('\n').map(s => s.trim()).filter(Boolean) || [];
 
@@ -223,6 +233,9 @@ export const ProductsAdmin = () => {
                                 </td>
                                 <td className="px-6 py-4 text-sm text-gray-600">
                                     {product.category?.name || `ID: ${product.categoryId}`}
+                                    {product.subcategoryName && (
+                                        <span className="ml-2 text-xs text-gray-400">→ {product.subcategoryName}</span>
+                                    )}
                                 </td>
                                 <td className="px-6 py-4 text-sm font-medium">{formatPrice(product.price)}</td>
                                 <td className="px-6 py-4">
@@ -258,8 +271,8 @@ export const ProductsAdmin = () => {
                         Назад
                     </button>
                     <span className="px-4 py-2">
-            Страница {productsData.number + 1} из {productsData.totalPages}
-          </span>
+                        Страница {productsData.number + 1} из {productsData.totalPages}
+                    </span>
                     <button
                         onClick={() => setCurrentPage(p => Math.min(productsData.totalPages - 1, p + 1))}
                         disabled={productsData.last}
@@ -272,7 +285,7 @@ export const ProductsAdmin = () => {
 
             {showModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg w-full max-w-md mx-4 p-6">
+                    <div className="bg-white rounded-lg w-full max-w-md mx-4 p-6 max-h-[90vh] overflow-y-auto">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-xl font-bold">
                                 {editingProduct ? 'Редактировать товар' : 'Новый товар'}
