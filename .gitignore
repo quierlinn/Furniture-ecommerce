@@ -38,7 +38,20 @@ build/
 ### Mac OS ###
 .DS_Store
 
-# Secrets
+# ===== Frontend (Vite/React) =====
+furniture-frontend/node_modules/
+furniture-frontend/dist/
+furniture-frontend/.vite/
+
+# ===== Secrets & Local Configs =====
 .env
+.env.local
+.env.production
 src/main/resources/application-dev.properties
 nginx/active.conf
+
+# ===== Archives & Dumps (не коммитим бэкапы в git) =====
+*.sql
+*.sql.gz
+*.tar.gz
+*.zip
