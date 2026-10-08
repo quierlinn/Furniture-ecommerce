@@ -47,7 +47,7 @@ furniture-frontend/.vite/
 .env
 .env.local
 .env.production
-src/main/resources/application-dev.properties
+**/application-dev.properties
 nginx/active.conf
 
 # ===== Archives & Dumps (не коммитим бэкапы в git) =====
